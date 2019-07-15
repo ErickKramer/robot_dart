@@ -163,6 +163,15 @@ def build(bld):
                       defines = ['GRAPHIC'],
                       target = 'tutorial')
 
+        bld.program(features = 'cxx',
+                      install_path = None,
+                      source = 'src/examples/dummy_tutorial.cpp',
+                      includes = './src',
+                      uselib = libs_graphics,
+                      use = 'RobotDARTSimu',
+                      defines = ['GRAPHIC'],
+                      target = 'dummyTutorial')
+
         # if we found the hexapod controller includes and Bullet collision
         if len(bld.env.INCLUDES_HEXAPOD_CONTROLLER) > 0 and 'BulletCollision' in bld.env.LIB_DART:
             bld.program(features = 'cxx',
