@@ -172,6 +172,15 @@ def build(bld):
                       defines = ['GRAPHIC'],
                       target = 'dummyTutorial')
 
+        bld.program(features = 'cxx',
+                      install_path = None,
+                      source = 'src/arm_sim/simple_arm_fkie.cpp',
+                      includes = './src',
+                      uselib = libs_graphics,
+                      use = 'RobotDARTSimu',
+                      defines = ['GRAPHIC'],
+                      target = 'simpleArmFKIE')
+
         # if we found the hexapod controller includes and Bullet collision
         if len(bld.env.INCLUDES_HEXAPOD_CONTROLLER) > 0 and 'BulletCollision' in bld.env.LIB_DART:
             bld.program(features = 'cxx',
