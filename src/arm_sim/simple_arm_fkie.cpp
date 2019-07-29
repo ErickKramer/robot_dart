@@ -26,8 +26,9 @@ int main(){
     simu.add_floor(10., 0.2);
 
     // Add one robot with a controller 
-    auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/arm_fkie.urdf");
-    //auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/arm.urdf");
+    auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/arm_fkie_2.urdf");
+    
+    // auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/arm.urdf");
 
     // Pin the arm to the workd 
     arm_robot -> fix_to_world();
@@ -36,7 +37,7 @@ int main(){
     
     // Set of desired positions of the joints in radians
     std::vector<double> ctrl = {0, 0, 0, 0, 0, 0, 0};
-    // std::vector<double> ctrl = {M_PI,M_PI/2,M_PI/2,M_PI/2};
+    // std::vector<double> ctrl = {M_PI/4,M_PI/4,0,0};
 
 
     // Add a PD-controller to the arm 
