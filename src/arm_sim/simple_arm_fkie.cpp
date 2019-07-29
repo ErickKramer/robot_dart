@@ -19,7 +19,7 @@ int main(){
         simu.set_graphics(std::make_shared<robot_dart::graphics::Graphics>(simu.world()));
         // Set camera position (0,3,1) looking at the center (0,0,0)
         std::static_pointer_cast<robot_dart::graphics::Graphics>(simu.graphics()) -> 
-            look_at({0., 3., 1.}, {0., 0., 0.});
+            look_at({3., 0., 1}, {0., 0., 0.});
     #endif 
 
     // Draw a floor with a square size of 10 meters and 0.2 meters of height  
@@ -36,7 +36,7 @@ int main(){
 
     
     // Set of desired positions of the joints in radians
-    std::vector<double> ctrl = {0, 0, 0, 0, 0, 0, 0};
+    std::vector<double> ctrl = {M_PI/2, M_PI/2, 0, 0, 0, 0, 0};
     // std::vector<double> ctrl = {M_PI/4,M_PI/4,0,0};
 
 
