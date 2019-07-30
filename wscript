@@ -180,7 +180,7 @@ def build(bld):
                       includes = './src',
                       uselib = libs_graphics,
                       use = 'RobotDARTSimu',
-                      defines = ['GRAPHIC'],
+                      defines = ['GRAPHIC', 'RESPATH="' + path + '"'],
                       target = 'simpleArmSchunk')
 
         # if we found the hexapod controller includes and Bullet collision
