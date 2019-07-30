@@ -1,8 +1,11 @@
 #include <iostream>
-// #include <algorithm>
-// #include <cstdlib>
+#include <algorithm>
+#include <cstdlib>
 #include <robot_dart/control/pd_control.hpp>
 #include <robot_dart/robot_dart_simu.hpp>
+
+#include <dart/collision/fcl/FCLCollisionDetector.hpp>
+#include <dart/constraint/ConstraintSolver.hpp>
 
 
 #ifdef GRAPHIC
@@ -45,8 +48,7 @@ int main(){
     std::vector<std::pair<std::string, std::string>> packages = {{"schunk", std::string(RESPATH) + "/models/meshes/lwa4d"}};
 
     // Create a robot from URDF and give a name to it
-    auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/arm_schunk_without_collisions.urdf", packages);
-    
+    // auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/arm_schunk_without_collisions.urdf", packages);
     auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/arm_schunk_with_collisions.urdf", packages);
     
     // Pin the arm to the workd 
@@ -65,6 +67,10 @@ int main(){
         -> set_pd(10., 1.);
    
    
+    // Specify collision detection
+    simu.world() -> getConstraintSolver() -> 
+        setCollisionDetector(dart::collision::FCLCollisionDetector::create());
+
     #ifdef GRAPHIC
         simu.set_graphics(std::make_shared<robot_dart::graphics::Graphics>(simu.world()));
         // Set camera position (0,3,1) looking at the center (0,0,0)
@@ -79,7 +85,7 @@ int main(){
     // Add the arm to the simulator
     simu.add_robot(arm_robot);
     simu.add_descriptor(std::make_shared<StateDesc>(simu));
-
+    
     Eigen::Vector3d size(0., 0., 0.);
 
     std::cout<< "Pose of the end effector?" << std::endl;
@@ -100,7 +106,7 @@ int main(){
     
     std::cout<<(arm_robot -> body_trans("right_arm_ee_link") * size).transpose() << std::endl;
     
-    std::cout<< std::static_pointer_cast<StateDesc>(simu.descriptor(0)) -> states.size() << std::endl;
+    std::cout<< std::static_pointer_cast<StateDesc>(simu.descriptor(0)) -> states[0] << std::endl;
     
     std::cout << (arm_robot -> name()) << std::endl;
 
