@@ -176,7 +176,7 @@ def build(bld):
 
         bld.program(features = 'cxx',
                       install_path = None,
-                      source = 'src/arm_sim/simple_arm_fkie.cpp',
+                      source = 'src/arm_sim/simple_arm_schunk.cpp',
                       includes = './src',
                       uselib = libs_graphics,
                       use = 'RobotDARTSimu',
