@@ -181,7 +181,7 @@ def build(bld):
                       uselib = libs_graphics,
                       use = 'RobotDARTSimu',
                       defines = ['GRAPHIC'],
-                      target = 'simpleArmFKIE')
+                      target = 'simpleArmSchunk')
 
         # if we found the hexapod controller includes and Bullet collision
         if len(bld.env.INCLUDES_HEXAPOD_CONTROLLER) > 0 and 'BulletCollision' in bld.env.LIB_DART:
