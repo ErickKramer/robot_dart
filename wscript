@@ -109,6 +109,8 @@ def build(bld):
     if bld.options.tests:
         bld.recurse('src/tests')
 
+    path = bld.path.abspath() + '/res'
+
     files = []
     for root, dirnames, filenames in os.walk(bld.path.abspath()+'/src/robot_dart/'):
         for filename in fnmatch.filter(filenames, '*.cpp'):
@@ -165,12 +167,12 @@ def build(bld):
 
         bld.program(features = 'cxx',
                       install_path = None,
-                      source = 'src/examples/dummy_tutorial.cpp',
+                      source = 'src/examples/meshes.cpp',
                       includes = './src',
                       uselib = libs_graphics,
                       use = 'RobotDARTSimu',
-                      defines = ['GRAPHIC'],
-                      target = 'dummyTutorial')
+                      defines = ['GRAPHIC', 'RESPATH="' + path + '"'],
+                      target = 'meshes')
 
         bld.program(features = 'cxx',
                       install_path = None,
@@ -215,6 +217,15 @@ def build(bld):
                   uselib = libs,
                   use = 'RobotDARTSimu',
                   target = 'tutorial_plain')
+
+    bld.program(features = 'cxx',
+                  install_path = None,
+                  source = 'src/examples/meshes.cpp',
+                  includes = './src',
+                  uselib = libs,
+                  use = 'RobotDARTSimu',
+                  defines = ['RESPATH="' + path + '"'],
+                  target = 'meshes_plain')
 
     # if we found the hexapod controller includes and Bullet collision
     if len(bld.env.INCLUDES_HEXAPOD_CONTROLLER) > 0 and 'BulletCollision' in bld.env.LIB_DART:
