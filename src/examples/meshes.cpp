@@ -15,7 +15,7 @@ int main()
 {
     std::srand(std::time(NULL));
 
-    std::vector<std::pair<std::string, std::string>> packages = {{"iiwa14", std::string(RESPATH) + "/models/meshes"}};
+    std::vector<std::pair<std::string, std::string>> packages = {{"iiwa14", std::string(RESPATH) + "/models/meshes/iiwa14"}};
     auto global_robot = std::make_shared<robot_dart::Robot>("res/models/iiwa14.urdf", packages);
 
     global_robot->fix_to_world();
@@ -33,7 +33,7 @@ int main()
     simu.set_graphics(std::make_shared<robot_dart::graphics::Graphics>(simu.world()));
 #endif
     simu.add_robot(global_robot);
-    simu.run(20.);
+    simu.run(5.);
 
     global_robot.reset();
     return 0;
