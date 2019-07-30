@@ -41,8 +41,13 @@ int main(){
     // Setting timestep of 0.001 seconds 
     robot_dart::RobotDARTSimu simu(0.001);
     
+    // Specify meshes packages
+    std::vector<std::pair<std::string, std::string>> packages = {{"schunk", std::string(RESPATH) + "/models/meshes/lwa4d"}};
+
     // Create a robot from URDF and give a name to it
-    auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/arm_schunk_2.urdf", "Schunk lw4d");
+    auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/arm_schunk_without_collisions.urdf", packages);
+    
+    auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/arm_schunk_with_collisions.urdf", packages);
     
     // Pin the arm to the workd 
     arm_robot -> fix_to_world();
