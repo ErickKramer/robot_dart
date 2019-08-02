@@ -87,26 +87,31 @@ int main(){
     simu.add_descriptor(std::make_shared<StateDesc>(simu));
     
     Eigen::Vector3d size(0., 0., 0.);
+    Eigen::Isometry3d end_effector_pose;
 
     std::cout<< "Pose of the end effector?" << std::endl;
-    std::cout<<(arm_robot -> body_trans("right_arm_ee_link") * size).transpose() << std::endl;
-
+    // std::cout<<(arm_robot -> body_trans("right_arm_ee_link") * size).transpose() << std::endl;
+    // std::cout << arm_robot -> skeleton() -> getBodyNode("right_arm_ee_link") -> getWorldTransform() << std::endl;
+    end_effector_pose = arm_robot -> skeleton() -> getBodyNode("right_arm_ee_link") -> getWorldTransform();
+     
+    std::cout<< end_effector_pose.matrix()<<std::endl;
     // Run the simulator for 2 seconds 
     simu.run(2.);
 
-    ctrl = {0., -M_PI/2, 0., 0., 0., 0., 0.};
-    arm_robot -> controllers()[0] -> set_parameters(ctrl);
-    simu.run(2.);
+    // ctrl = {0., -M_PI/2, 0., 0., 0., 0., 0.};
+    // arm_robot -> controllers()[0] -> set_parameters(ctrl);
+    // simu.run(2.);
     
-    std::cout<<(arm_robot -> body_trans("right_arm_ee_link") * size).transpose() << std::endl;
+    // std::cout<<(arm_robot -> body_trans("right_arm_ee_link") * size).transpose() << std::endl;
     
-    ctrl = {0., 0, 0., 0., 0., 0., 0.};
-    arm_robot -> controllers()[0] -> set_parameters(ctrl);
-    simu.run(2.);
+    // ctrl = {0., 0, 0., 0., 0., 0., 0.};
+    // arm_robot -> controllers()[0] -> set_parameters(ctrl);
+    // simu.run(2.);
+
     
-    std::cout<<(arm_robot -> body_trans("right_arm_ee_link") * size).transpose() << std::endl;
+    // std::cout<<(arm_robot -> body_trans("right_arm_ee_link") * size).transpose() << std::endl;
     
-    std::cout<< std::static_pointer_cast<StateDesc>(simu.descriptor(0)) -> states[0] << std::endl;
+    // std::cout<< std::static_pointer_cast<StateDesc>(simu.descriptor(0)) -> states[0] << std::endl;
     
     std::cout << (arm_robot -> name()) << std::endl;
 
