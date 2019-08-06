@@ -6,6 +6,7 @@
 
 #include <dart/collision/fcl/FCLCollisionDetector.hpp>
 #include <dart/constraint/ConstraintSolver.hpp>
+#include <typeinfo>
 
 
 #ifdef GRAPHIC
@@ -86,34 +87,47 @@ int main(){
     simu.add_robot(arm_robot);
     simu.add_descriptor(std::make_shared<StateDesc>(simu));
     
-    Eigen::Vector3d size(0., 0., 0.);
+    Eigen::Vector4d zero_vector(1., 1., 1., 1.);
     Eigen::Isometry3d end_effector_pose;
 
     std::cout<< "Pose of the end effector?" << std::endl;
+    std::cout<<"-----------------------------------"<<std::endl;
+    std::cout<<"Moving second joint pi/2"<<std::endl;
     // std::cout<<(arm_robot -> body_trans("right_arm_ee_link") * size).transpose() << std::endl;
-    // std::cout << arm_robot -> skeleton() -> getBodyNode("right_arm_ee_link") -> getWorldTransform() << std::endl;
+    // Get the transform of this Frame with respect to the world frame
     end_effector_pose = arm_robot -> skeleton() -> getBodyNode("right_arm_ee_link") -> getWorldTransform();
+    
+    std::cout<< end_effector_pose.matrix() * zero_vector<<std::endl;
+
      
-    std::cout<< end_effector_pose.matrix()<<std::endl;
-    // Run the simulator for 2 seconds 
-    simu.run(2.);
+    // std::cout<<"-----------------------------------"<<std::endl;
+    // // Run the simulator for 2 seconds 
+    // simu.run(2.);
 
     // ctrl = {0., -M_PI/2, 0., 0., 0., 0., 0.};
     // arm_robot -> controllers()[0] -> set_parameters(ctrl);
     // simu.run(2.);
+    // std::cout<<"Moving second joint -pi/2"<<std::endl;
     
-    // std::cout<<(arm_robot -> body_trans("right_arm_ee_link") * size).transpose() << std::endl;
+    // // std::cout<<(arm_robot -> body_trans("right_arm_ee_link") * size).transpose() << std::endl;
+    // end_effector_pose = arm_robot -> skeleton() -> getBodyNode("right_arm_ee_link") -> getWorldTransform();
+    // std::cout<< end_effector_pose.matrix()<<std::endl;
+    // std::cout<<"-----------------------------------"<<std::endl;
     
     // ctrl = {0., 0, 0., 0., 0., 0., 0.};
     // arm_robot -> controllers()[0] -> set_parameters(ctrl);
     // simu.run(2.);
+    // std::cout<<"Moving second joint 0"<<std::endl;
 
-    
+    // end_effector_pose = arm_robot -> skeleton() -> getBodyNode("right_arm_ee_link") -> getWorldTransform();
+    // std::cout<< end_effector_pose.matrix()<<std::endl;
+    // std::cout<<"-----------------------------------"<<std::endl;
+
     // std::cout<<(arm_robot -> body_trans("right_arm_ee_link") * size).transpose() << std::endl;
     
     // std::cout<< std::static_pointer_cast<StateDesc>(simu.descriptor(0)) -> states[0] << std::endl;
     
-    std::cout << (arm_robot -> name()) << std::endl;
+    // std::cout << (arm_robot -> name()) << std::endl;
 
     arm_robot.reset();
 
