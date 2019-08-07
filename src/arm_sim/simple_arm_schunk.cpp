@@ -7,13 +7,17 @@
 #include <dart/collision/fcl/FCLCollisionDetector.hpp>
 #include <dart/constraint/ConstraintSolver.hpp>
 #include <typeinfo>
-
+// #include <Eigen/Dense>
+// #include <Eigen/Geometry>
 
 #ifdef GRAPHIC
 #include <robot_dart/graphics/graphics.hpp>
 #endif 
+
+
+
 /*
-    Descriptors:
+    DescriptorsQuaterniond:
         - Functors that are used to log information/data. 
 
         - In this case we log, state trajectories. 
@@ -36,6 +40,55 @@ struct StateDesc : public robot_dart::descriptor::BaseDescriptor{
     std::vector<Eigen::VectorXd> states;
 
 };
+
+
+void display_link_info(Eigen::Isometry3d link_transform){
+
+    /*
+        Displays the following information from the transform of a link:
+        - Homogeneous Transformation matrix
+        - Rotation matrix
+        - Translation matrix
+        - Quaternion 
+        - Euler angles
+        - Pose 
+    */
+
+    // Computes rotation matrix 
+    Eigen::Matrix3d rot_matrix = link_transform.rotation();
+    // Computes Homogeneous transformation matrix
+    Eigen::Matrix4d transformation_matrix = link_transform.matrix();
+    // Computes Quaternions
+    Eigen::Quaterniond quat_end(rot_matrix);
+    // Computes Euler angles
+    Eigen::Vector3d euler = rot_matrix.eulerAngles(2,1,0);
+    // Computes translation vector
+    Eigen::VectorXd translation = link_transform.translation();
+    // Computes pose vector 
+    Eigen::VectorXd pose(link_transform.translation().size() + euler.size());
+    pose << translation, euler;
+    
+
+    std::cout << "Homogeneous transformation matrix" << std::endl;
+    std::cout << transformation_matrix << std::endl;
+    
+    std::cout << "\n Rotation matrix" << std::endl;
+    std::cout << rot_matrix << std::endl;
+    
+    std::cout << "\n Translation vector" << std::endl;
+    std::cout << translation << std::endl;
+
+    std::cout << "\n Quaternion" << std::endl;
+    std::cout << "w: " << quat_end.w() << " x: " << quat_end.x() << 
+                 " y: " << quat_end.y() << " z: " << quat_end.z() << std::endl;
+
+    std::cout << "\n Euler angles" << std::endl;
+    std::cout << "Yaw: " << euler[0] << " Pitch: " << euler [1] << " Roll: " << 
+                 euler[2] << std::endl;
+
+    std::cout << "\n Pose" << std::endl;
+    std::cout << pose.transpose() << std::endl;        
+}
 
 
 int main(){
@@ -87,47 +140,39 @@ int main(){
     simu.add_robot(arm_robot);
     simu.add_descriptor(std::make_shared<StateDesc>(simu));
     
-    Eigen::Vector4d zero_vector(1., 1., 1., 1.);
-    Eigen::Isometry3d end_effector_pose;
+    // Run the simulator for 2 seconds 
+    simu.run(2.);
+    
+    //Transform docs -> https://eigen.tuxfamily.org/dox/classEigen_1_1Transform.html
+    Eigen::Isometry3d frame_transform;
+    frame_transform = arm_robot -> skeleton() -> getBodyNode("right_arm_ee_link") -> getWorldTransform();
 
-    std::cout<< "Pose of the end effector?" << std::endl;
     std::cout<<"-----------------------------------"<<std::endl;
-    std::cout<<"Moving second joint pi/2"<<std::endl;
-    // std::cout<<(arm_robot -> body_trans("right_arm_ee_link") * size).transpose() << std::endl;
-    // Get the transform of this Frame with respect to the world frame
-    end_effector_pose = arm_robot -> skeleton() -> getBodyNode("right_arm_ee_link") -> getWorldTransform();
+    std::cout<<"Moving second joint pi/2 radians"<<std::endl;
+    display_link_info(frame_transform);
     
-    std::cout<< end_effector_pose.matrix() * zero_vector<<std::endl;
-
      
-    // std::cout<<"-----------------------------------"<<std::endl;
-    // // Run the simulator for 2 seconds 
-    // simu.run(2.);
+    std::cout<<"-----------------------------------"<<std::endl;
 
-    // ctrl = {0., -M_PI/2, 0., 0., 0., 0., 0.};
-    // arm_robot -> controllers()[0] -> set_parameters(ctrl);
-    // simu.run(2.);
-    // std::cout<<"Moving second joint -pi/2"<<std::endl;
+    ctrl = {0., -M_PI/2, 0., 0., 0., 0., 0.};
+    arm_robot -> controllers()[0] -> set_parameters(ctrl);
+    simu.run(2.);
     
-    // // std::cout<<(arm_robot -> body_trans("right_arm_ee_link") * size).transpose() << std::endl;
-    // end_effector_pose = arm_robot -> skeleton() -> getBodyNode("right_arm_ee_link") -> getWorldTransform();
-    // std::cout<< end_effector_pose.matrix()<<std::endl;
-    // std::cout<<"-----------------------------------"<<std::endl;
+    frame_transform = arm_robot -> skeleton() -> getBodyNode("right_arm_ee_link") -> getWorldTransform();
     
-    // ctrl = {0., 0, 0., 0., 0., 0., 0.};
-    // arm_robot -> controllers()[0] -> set_parameters(ctrl);
-    // simu.run(2.);
-    // std::cout<<"Moving second joint 0"<<std::endl;
-
-    // end_effector_pose = arm_robot -> skeleton() -> getBodyNode("right_arm_ee_link") -> getWorldTransform();
-    // std::cout<< end_effector_pose.matrix()<<std::endl;
-    // std::cout<<"-----------------------------------"<<std::endl;
-
-    // std::cout<<(arm_robot -> body_trans("right_arm_ee_link") * size).transpose() << std::endl;
+    std::cout<<"Moving second joint -pi/2 radians"<<std::endl;
+    display_link_info(frame_transform);
     
-    // std::cout<< std::static_pointer_cast<StateDesc>(simu.descriptor(0)) -> states[0] << std::endl;
+    std::cout<<"-----------------------------------"<<std::endl;
     
-    // std::cout << (arm_robot -> name()) << std::endl;
+    ctrl = {0., 0, 0., 0., 0., 0., 0.};
+    arm_robot -> controllers()[0] -> set_parameters(ctrl);
+    simu.run(2.);
+   
+    frame_transform = arm_robot -> skeleton() -> getBodyNode("right_arm_ee_link") -> getWorldTransform();
+    
+    std::cout<<"Moving second joint 0 radians"<<std::endl;
+    display_link_info(frame_transform);
 
     arm_robot.reset();
 
