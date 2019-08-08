@@ -67,6 +67,9 @@ void display_link_info(Eigen::Isometry3d link_transform){
     // Computes pose vector 
     Eigen::VectorXd pose(link_transform.translation().size() + euler.size());
     pose << translation, euler;
+    // Computes an axis angle based on the quaternions
+    // https://eigen.tuxfamily.org/dox/classEigen_1_1AngleAxis.html
+    Eigen::AngleAxisd angle_axis(quat_end);
     
 
     std::cout << "Homogeneous transformation matrix" << std::endl;
@@ -87,7 +90,11 @@ void display_link_info(Eigen::Isometry3d link_transform){
                  euler[2] << std::endl;
 
     std::cout << "\n Pose" << std::endl;
-    std::cout << pose.transpose() << std::endl;        
+    std::cout << pose.transpose() << std::endl;       
+
+    std::cout << "\n Axis angle" << std::endl;    
+    std::cout << angle_axis.axis().transpose() << std::endl;
+    std::cout<< angle_axis.angle() << std::endl; 
 }
 
 
@@ -101,7 +108,7 @@ int main(){
     // Specify meshes packages
     std::vector<std::pair<std::string, std::string>> packages = {{"schunk", std::string(RESPATH) + "/models/meshes/lwa4d"}};
 
-    // Create a robot from URDF and give a name to it
+    // Create a robot from URDF specifying where the stl files are located
     // auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/arm_schunk_without_collisions.urdf", packages);
     auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/arm_schunk_with_collisions.urdf", packages);
     
@@ -111,7 +118,7 @@ int main(){
 
 
     // Set of desired positions of the joints in radians
-    std::vector<double> ctrl = {0., M_PI/2, 0., 0., 0., 0., 0.};
+    std::vector<double> ctrl = {0., M_PI_2, 0., 0., 0., 0., 0.};
 
     // Add a PD-controller to the arm 
     arm_robot -> add_controller(std::make_shared<robot_dart::control::PDControl>(ctrl));
@@ -126,7 +133,10 @@ int main(){
         setCollisionDetector(dart::collision::FCLCollisionDetector::create());
 
     #ifdef GRAPHIC
-        simu.set_graphics(std::make_shared<robot_dart::graphics::Graphics>(simu.world()));
+        // Specify the graphics for the simulator
+        // Pass the world, resolution (widht, height)
+        
+        simu.set_graphics(std::make_shared<robot_dart::graphics::Graphics>(simu.world(), 1920,1080));
         // Set camera position (0,3,1) looking at the center (0,0,0)
         std::static_pointer_cast<robot_dart::graphics::Graphics>(simu.graphics()) -> 
             look_at({0., 3., 1}, {0., 0., 0.});
@@ -154,7 +164,7 @@ int main(){
      
     std::cout<<"-----------------------------------"<<std::endl;
 
-    ctrl = {0., -M_PI/2, 0., 0., 0., 0., 0.};
+    ctrl = {0., -M_PI_2, 0., 0., 0., 0., 0.};
     arm_robot -> controllers()[0] -> set_parameters(ctrl);
     simu.run(2.);
     
@@ -174,8 +184,30 @@ int main(){
     std::cout<<"Moving second joint 0 radians"<<std::endl;
     display_link_info(frame_transform);
 
-    arm_robot.reset();
+    std::cout<<"-----------------------------------"<<std::endl;
+    
+    ctrl = {M_PI_2, M_PI_2, 0., 0., 0., 0., 0.};
+    arm_robot -> controllers()[0] -> set_parameters(ctrl);
+    simu.run(2.);
+   
+    frame_transform = arm_robot -> skeleton() -> getBodyNode("right_arm_ee_link") -> getWorldTransform();
+    
+    std::cout<<"Moving first joint pi/2 and second joint pi/2 radians"<<std::endl;
+    display_link_info(frame_transform);
 
+    std::cout<<"-----------------------------------"<<std::endl;
+    
+    ctrl = {M_PI_2, -M_PI_2, 0., 0., 0., 0., 0.};
+    arm_robot -> controllers()[0] -> set_parameters(ctrl);
+    simu.run(2.);
+   
+    frame_transform = arm_robot -> skeleton() -> getBodyNode("right_arm_ee_link") -> getWorldTransform();
+    
+    std::cout<<"Moving first joint pi/2 and second joint -pi/2 radians"<<std::endl;
+    display_link_info(frame_transform);
+
+    arm_robot.reset();
+   
     return 0; 
 
 }
