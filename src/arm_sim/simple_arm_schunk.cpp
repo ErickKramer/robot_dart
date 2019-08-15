@@ -110,7 +110,7 @@ int main(){
 
     // Create a robot from URDF specifying where the stl files are located
     // auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/arm_schunk_without_collisions.urdf", packages);
-    auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/arm_schunk_with_collisions.urdf", packages);
+    auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/arm_schunk_with_collisions.urdf", packages, "schunk lwa4d");
     
     // Pin the arm to the workd 
     arm_robot -> fix_to_world();
@@ -157,6 +157,8 @@ int main(){
     Eigen::Isometry3d frame_transform;
     frame_transform = arm_robot -> skeleton() -> getBodyNode("right_arm_ee_link") -> getWorldTransform();
 
+    std::cout << "Arm: " << arm_robot -> name() << std::endl;
+    std::cout << "Number of DoF: " << arm_robot -> skeleton() -> getNumDofs() << std::endl;
     std::cout<<"-----------------------------------"<<std::endl;
     std::cout<<"Moving second joint pi/2 radians"<<std::endl;
     display_link_info(frame_transform);
