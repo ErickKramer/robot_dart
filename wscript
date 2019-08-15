@@ -167,6 +167,15 @@ def build(bld):
 
         bld.program(features = 'cxx',
                       install_path = None,
+                      source = 'src/arm_sim/dummy_visualizer.cpp',
+                      includes = './src',
+                      uselib = libs_graphics,
+                      use = 'RobotDARTSimu',
+                      defines = ['GRAPHIC', 'RESPATH="' + path + '"'],
+                      target = 'dummyVisualizer')
+
+        bld.program(features = 'cxx',
+                      install_path = None,
                       source = 'src/examples/meshes.cpp',
                       includes = './src',
                       uselib = libs_graphics,
