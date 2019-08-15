@@ -60,8 +60,12 @@ int main(){
 
     // Vector to move the position of the arm in the world
     Eigen::Isometry3d tf = Eigen::Isometry3d::Identity();
-    tf.translation() = Eigen::Vector3d(0, 0.0, -0.5);
-    // tf.rotation() = Eigen::Matrix3d()
+
+    // Translate the base robot 
+    tf.translation() = Eigen::Vector3d(0, 0.0, 0.0);
+    
+    // Rotate the base of the robot
+    tf.rotate(Eigen::AngleAxisd(-M_PI_2, Eigen::Vector3d::UnitY()));
 
     // dummy_robot -> skeleton() -> setTransformFromParentBodyNode(tf);
     dummy_robot -> skeleton() -> getRootBodyNode() -> getParentJoint() ->
