@@ -30,7 +30,7 @@ int main(){
     // Read the robot from the urdf
     auto dummy_robot = std::make_shared<robot_dart::Robot>("res/models/fetch.urdf", packages);
 
-    simu.add_floot(10., 0.2);
+    simu.add_floor(10., 0.2);
     simu.world() -> getConstraintSolver() ->
         setCollisionDetector(dart::collision::FCLCollisionDetector::create());
     // Pin robot to the world
