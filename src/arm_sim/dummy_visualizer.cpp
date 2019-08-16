@@ -3,6 +3,7 @@
 
 #include <dart/collision/fcl/FCLCollisionDetector.hpp>
 #include <dart/constraint/ConstraintSolver.hpp>
+#include <dart/dynamics/DegreeOfFreedom.hpp>
 
 #ifdef GRAPHIC
 #include <robot_dart/graphics/graphics.hpp>
@@ -48,6 +49,10 @@ int main(){
     // Pin robot to the world
     dummy_robot -> fix_to_world();
     dummy_robot -> set_position_enforced(true);
+
+    double numDofs = dummy_robot -> skeleton() -> getNumDofs();
+
+    // std::vector<double> ctrl()
     
     // Display the name of the robot
     std::cout << "Simulating the robot " << dummy_robot -> name() << std::endl;
@@ -55,8 +60,13 @@ int main(){
     // Display the number of DoF
     std::cout << "Number of DoF " << dummy_robot -> skeleton() -> getNumDofs() << std::endl;
 
+    // Add robot to the simulator
     simu.add_robot(dummy_robot);
-    simu.run(3.);
+
+    // Set the position of a single joint
+    // dummy_robot -> skeleton() -> getDof(1) -> setPosition(M_PI_4);
+
+    simu.run(5.);
 
     // Vector to move the position of the arm in the world
     Eigen::Isometry3d tf = Eigen::Isometry3d::Identity();
@@ -70,10 +80,9 @@ int main(){
     // dummy_robot -> skeleton() -> setTransformFromParentBodyNode(tf);
     dummy_robot -> skeleton() -> getRootBodyNode() -> getParentJoint() ->
         setTransformFromParentBodyNode(tf);
-    // Add robot to the simulator
 
 
     // Runs simulator for 5 seconds
-    simu.run(3.);
+    simu.run(5.);
     return 0;
 }
