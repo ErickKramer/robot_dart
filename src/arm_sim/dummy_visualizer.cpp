@@ -1,5 +1,7 @@
 #include <iostream>
 #include <robot_dart/robot_dart_simu.hpp>
+#include <robot_dart/robot.hpp>
+#include <robot_dart/control/pd_control.hpp>
 
 #include <dart/collision/fcl/FCLCollisionDetector.hpp>
 #include <dart/constraint/ConstraintSolver.hpp>
@@ -52,7 +54,10 @@ int main(){
 
     double numDofs = dummy_robot -> skeleton() -> getNumDofs();
 
-    // std::vector<double> ctrl()
+    std::vector<double> ctrl(numDofs, 0.);
+    dummy_robot -> add_controller(std::make_shared<robot_dart::control::PDControl>(ctrl));
+    std::static_pointer_cast<robot_dart::control::PDControl>(dummy_robot -> controllers()[0]) ->
+        set_pd(10., 1.);
     
     // Display the name of the robot
     std::cout << "Simulating the robot " << dummy_robot -> name() << std::endl;
@@ -62,9 +67,6 @@ int main(){
 
     // Add robot to the simulator
     simu.add_robot(dummy_robot);
-
-    // Set the position of a single joint
-    // dummy_robot -> skeleton() -> getDof(1) -> setPosition(M_PI_4);
 
     simu.run(5.);
 
@@ -81,6 +83,14 @@ int main(){
     dummy_robot -> skeleton() -> getRootBodyNode() -> getParentJoint() ->
         setTransformFromParentBodyNode(tf);
 
+    // Set the position of a single joint
+    // NOTE: This form of specifying the joint angle works when not using a controller to move the arm. 
+    // dummy_robot -> skeleton() -> getDof(1) -> setPosition(M_PI_4);
+
+    // Set the position of the desired joints and sent the controller to the robot. 
+    ctrl[1] = M_PI_4;
+    ctrl[3] = -M_PI_2;
+    dummy_robot -> controllers()[0] -> set_parameters(ctrl);
 
     // Runs simulator for 5 seconds
     simu.run(5.);
