@@ -18,11 +18,11 @@ int main(){
     // std::vector<std::pair<std::string, std::string>> packages = {{"fetch", 
     //     std::string(RESPATH) + "/models/meshes/fetch"}};
     
-    // std::vector<std::pair<std::string, std::string>> packages = {{"iiwa14", 
-    //     std::string(RESPATH) + "/models/meshes/iiwa14"}};
+    std::vector<std::pair<std::string, std::string>> packages = {{"iiwa14", 
+        std::string(RESPATH) + "/models/meshes/iiwa14"}};
 
-    std::vector<std::pair<std::string, std::string>> packages = {{"schunk", 
-        std::string(RESPATH) + "/models/meshes/lwa4d"}};
+    // std::vector<std::pair<std::string, std::string>> packages = {{"schunk", 
+    //     std::string(RESPATH) + "/models/meshes/lwa4d"}};
 
     #ifdef GRAPHIC
         // Generates the world
@@ -36,8 +36,8 @@ int main(){
 
     // Read the robot from the urdf
     // auto dummy_robot = std::make_shared<robot_dart::Robot>("res/models/fetch_arm.urdf", packages, "dummy_robot");
-    // auto dummy_robot = std::make_shared<robot_dart::Robot>("res/models/iiwa14.urdf", packages, "dummy_robot");
-    auto dummy_robot = std::make_shared<robot_dart::Robot>("res/models/arm_schunk_with_collisions.urdf", packages, "dummy_robot");
+    auto dummy_robot = std::make_shared<robot_dart::Robot>("res/models/iiwa14.urdf", packages, "dummy_robot");
+    // auto dummy_robot = std::make_shared<robot_dart::Robot>("res/models/arm_schunk_with_collisions.urdf", packages, "dummy_robot");
 
     // simu.add_floor(10., 0.2);
 
@@ -62,16 +62,13 @@ int main(){
     Eigen::Isometry3d tf = Eigen::Isometry3d::Identity();
 
     // Translate the base robot 
-    tf.translation() = Eigen::Vector3d(0, 0.0, 0.0);
+    tf.translation() = Eigen::Vector3d(1., 2., 0.0);
     
     // Rotate the base of the robot
-    tf.rotate(Eigen::AngleAxisd(-M_PI_2, Eigen::Vector3d::UnitY()));
+    tf.rotate(Eigen::AngleAxisd(-M_PI_4, Eigen::Vector3d::UnitY()));
 
-    // dummy_robot -> skeleton() -> setTransformFromParentBodyNode(tf);
-    dummy_robot -> skeleton() -> getRootBodyNode() -> getParentJoint() ->
-        setTransformFromParentBodyNode(tf);
-    // Add robot to the simulator
-
+    // Move the base of the arm
+    dummy_robot -> set_base_pose(tf);
 
     // Runs simulator for 5 seconds
     simu.run(3.);
