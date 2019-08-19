@@ -8,6 +8,8 @@
 #include <robot_dart/graphics/graphics.hpp>
 #endif 
 
+#include <robot_dart/robot.hpp>
+
 int main(){
     std::srand(std::time(NULL));
 
@@ -69,6 +71,18 @@ int main(){
 
     // Move the base of the arm
     dummy_robot -> set_base_pose(tf);
+
+    Eigen::VectorXd robot_positions = dummy_robot -> skeleton() -> getPositions();
+    Eigen::VectorXd robot_velocities = dummy_robot -> skeleton() -> getVelocities();
+
+    std::cout << "Robot positions " << robot_positions.transpose() << std::endl;
+    std::cout << "Robot velocities " << robot_velocities.transpose() << std::endl;
+
+    // Get the mass matrix of the arm
+    Eigen::MatrixXd mass_matrix = dummy_robot -> skeleton() -> getMassMatrix();
+    std::cout << "Mass Matrix \n" << mass_matrix << std::endl;
+    std::cout << "Mass of the arm " << dummy_robot -> skeleton() -> getMass() << std::endl;
+
 
     // Runs simulator for 5 seconds
     simu.run(3.);
