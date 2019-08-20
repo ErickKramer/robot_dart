@@ -25,7 +25,7 @@ struct JointStateDesc : public robot_dart::descriptor::BaseDescriptor{
 
     void operator()(){
         // Stores the joint positions
-        if (_simu.robots().size()> 0){
+        if (_simu.robots().size() > 0){
             // Add current joints configuration to the joints_states vector
             joints_states.push_back(_simu.robots()[0]->skeleton()->getPositions());
             
@@ -33,6 +33,26 @@ struct JointStateDesc : public robot_dart::descriptor::BaseDescriptor{
     }
 
     std::vector<Eigen::VectorXd> joints_states;
+};
+
+struct PoseStateDesc : public robot_dart::descriptor::BaseDescriptor{
+    // Descriptor used to log the end_effector pose states 
+    PoseStateDesc(robot_dart::RobotDARTSimu& simu, size_t desc_dump = 1) : 
+        robot_dart::descriptor::BaseDescriptor(simu, desc_dump) {}
+    
+    void operator()(){
+        // Stores the end effector poses 
+        if(_simu.robots().size() > 0){
+            // Get numJoints
+            double numJoints = _simu.robots()[0]->skeleton()->getNumBodyNodes();
+
+            // Add current end effector pose to the end_effector states vector
+            pose_states.push_back(compute_pose(_simu.robots()[0]->skeleton()->
+                getBodyNode(numJoints - 1)->getWorldTransform()));
+        }
+    }
+
+    std::vector<Eigen::VectorXd> pose_states;
 };
 
 Eigen::VectorXd compute_pose(Eigen::Isometry3d link_transform){
@@ -164,6 +184,7 @@ int main(){
     // Add the arm to the simulator
     simu.add_robot(arm_robot);
     simu.add_descriptor(std::make_shared<JointStateDesc>(simu));
+    simu.add_descriptor(std::make_shared<PoseStateDesc>(simu));
     
     // Run the simulator for 2 seconds 
     simu.run(simulation_time);
@@ -180,6 +201,11 @@ int main(){
     std::cout << "Expected number of joints_states = " << simulation_time/timestep << std::endl;
     std::cout << "Number of joints_states recorded " << 
         std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.size() << std::endl;
+    std::cout << "Number of pose_states recorded " << 
+        std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states.size() << std::endl;
+    std::cout << "Last pose recorded " << std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->
+        pose_states.back().transpose() << std::endl;
+
     //Reset joints_states vector 
     std::cout << "Joint configuration " << std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->
         joints_states.back().transpose() << std::endl;
