@@ -57,6 +57,23 @@ struct PoseStateDesc : public robot_dart::descriptor::BaseDescriptor{
     std::vector<Eigen::VectorXd> pose_states;
 };
 
+struct JointVelDesc : public robot_dart::descriptor::BaseDescriptor{
+    // Descriptor used to log the joints states
+    JointVelDesc(robot_dart::RobotDARTSimu& simu, size_t desc_dump = 1) : 
+        robot_dart::descriptor::BaseDescriptor(simu, desc_dump) {}
+
+    void operator()(){
+        // Stores the joint positions
+        if (_simu.robots().size() > 0){
+            // Add current joints configuration to the joints_states vector
+            joints_velocities.push_back(_simu.robots()[0]->skeleton()->getVelocities());
+            
+        }
+    }
+
+    std::vector<Eigen::VectorXd> joints_velocities;
+};
+
 Eigen::VectorXd compute_pose(Eigen::Isometry3d link_transform){
     // Computes rotation matrix 
     Eigen::Matrix3d rot_matrix = link_transform.rotation();
@@ -194,11 +211,17 @@ int main(){
     // Draw a floor with a square size of 10 meters and 0.2 meters of height  
     // simu.add_floor(10., 0.2);
 
-    // Simulate the world 
-    // Add the arm to the simulator
+    // Add robot to the simulator
     simu.add_robot(arm_robot);
+
+    // Add descriptors for the simulator
     simu.add_descriptor(std::make_shared<JointStateDesc>(simu));
     simu.add_descriptor(std::make_shared<PoseStateDesc>(simu));
+    simu.add_descriptor(std::make_shared<JointVelDesc>(simu));
+    
+    std::cout << "Arm: " << arm_robot->name() << std::endl;
+    std::cout << "Number of DoF: " << arm_robot->skeleton()->getNumDofs() << std::endl;
+    std::cout<<"-----------------------------------"<<std::endl;
     
     // Run the simulator for 2 seconds 
     simu.run(simulation_time);
@@ -207,9 +230,6 @@ int main(){
     Eigen::Isometry3d frame_transform;
     frame_transform = arm_robot->skeleton()->getBodyNode("right_arm_ee_link")->getWorldTransform();
 
-    std::cout << "Arm: " << arm_robot->name() << std::endl;
-    std::cout << "Number of DoF: " << arm_robot->skeleton()->getNumDofs() << std::endl;
-    std::cout<<"-----------------------------------"<<std::endl;
     std::cout<<"Moving second joint pi/2 radians"<<std::endl;
 
     std::cout << "Pose" << compute_pose(frame_transform).transpose() << std::endl;
@@ -220,17 +240,22 @@ int main(){
     std::cout << "Number of pose_states recorded " << 
         std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states.size() << std::endl;
 
-    std::cout << "Last pose recorded " << std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->
-        pose_states.back().transpose() << std::endl;
+    std::vector<Eigen::VectorXd> poses = std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states;
+    
+    std::cout << "Last pose recorded " << poses.back().transpose() << std::endl;
 
     //Reset joints_states vector 
     std::cout << "Joint configuration " << std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->
         joints_states.back().transpose() << std::endl;
     std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
 
-    std::vector<Eigen::VectorXd> poses = std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states;
+    // Backup the stored poses in a text file
+    // backup(poses, "text", "poses.txt");
+
+    std::vector<Eigen::VectorXd> velocities = std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities;
+    backup(velocities, "text", "velocities.txt");
     
-    backup(poses, "text", "poses.txt");
+    // std::cout << "Velocities " << arm_robot->skeleton()->getVelocities() << std::endl;
      
     std::cout<<"-----------------------------------"<<std::endl;
 
