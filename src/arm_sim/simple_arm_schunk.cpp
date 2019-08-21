@@ -254,6 +254,9 @@ int main(){
 
     std::vector<Eigen::VectorXd> velocities = std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities;
     backup(velocities, "text", "velocities.txt");
+
+    Eigen::VectorXd last_velocity = velocities.back(); 
+    std::cout << last_velocity.isZero(1e-3) << std::endl;
     
     // std::cout << "Velocities " << arm_robot->skeleton()->getVelocities() << std::endl;
      
