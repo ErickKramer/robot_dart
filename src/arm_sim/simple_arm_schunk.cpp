@@ -6,7 +6,9 @@
 
 #include <dart/collision/fcl/FCLCollisionDetector.hpp>
 #include <dart/constraint/ConstraintSolver.hpp>
-#include <typeinfo>
+
+#include <fstream>
+#include <iterator>
 // #include <Eigen/Dense>
 // #include <Eigen/Geometry>
 
@@ -74,59 +76,71 @@ Eigen::VectorXd compute_pose(Eigen::Isometry3d link_transform){
 }
 
 
-void display_link_info(Eigen::Isometry3d link_transform){
+// void display_link_info(Eigen::Isometry3d link_transform){
 
-    /*
-        Displays the following information from the transform of a link:
-        - Homogeneous Transformation matrix
-        - Rotation matrix
-        - Translation matrix
-        - Quaternion 
-        - Euler angles
-        - Pose 
-    */
+//     /*
+//         Displays the following information from the transform of a link:
+//         - Homogeneous Transformation matrix
+//         - Rotation matrix
+//         - Translation matrix
+//         - Quaternion 
+//         - Euler angles
+//         - Pose 
+//     */
 
-    // Computes rotation matrix 
-    // Eigen::Matrix3d rot_matrix = link_transform.rotation();
-    // // Computes Homogeneous transformation matrix
-    // Eigen::Matrix4d transformation_matrix = link_transform.matrix();
-    // // Computes Quaternions
-    // Eigen::Quaterniond quat_end(rot_matrix);
-    // // Computes Euler angles
-    // Eigen::Vector3d euler = rot_matrix.eulerAngles(2,1,0);
-    // // Computes translation vector
-    // Eigen::VectorXd translation = link_transform.translation();
-    // // Computes pose vector 
-    // Eigen::VectorXd pose(link_transform.translation().size() + euler.size());
-    // pose << translation, euler;
-    // Computes an axis angle based on the quaternions
-    // https://eigen.tuxfamily.org/dox/classEigen_1_1AngleAxis.html
-    // Eigen::AngleAxisd angle_axis(quat_end);
+//     Computes rotation matrix 
+//     Eigen::Matrix3d rot_matrix = link_transform.rotation();
+//     // Computes Homogeneous transformation matrix
+//     Eigen::Matrix4d transformation_matrix = link_transform.matrix();
+//     // Computes Quaternions
+//     Eigen::Quaterniond quat_end(rot_matrix);
+//     // Computes Euler angles
+//     Eigen::Vector3d euler = rot_matrix.eulerAngles(2,1,0);
+//     // Computes translation vector
+//     Eigen::VectorXd translation = link_transform.translation();
+//     // Computes pose vector 
+//     Eigen::VectorXd pose(link_transform.translation().size() + euler.size());
+//     pose << translation, euler;
+//     Computes an axis angle based on the quaternions
+//     https://eigen.tuxfamily.org/dox/classEigen_1_1AngleAxis.html
+//     Eigen::AngleAxisd angle_axis(quat_end);
     
 
-    // std::cout << "Homogeneous transformation matrix" << std::endl;
-    // std::cout << transformation_matrix << std::endl;
+//     std::cout << "Homogeneous transformation matrix" << std::endl;
+//     std::cout << transformation_matrix << std::endl;
     
-    // std::cout << "\n Rotation matrix" << std::endl;
-    // std::cout << rot_matrix << std::endl;
+//     std::cout << "\n Rotation matrix" << std::endl;
+//     std::cout << rot_matrix << std::endl;
     
-    // std::cout << "\n Translation vector" << std::endl;
-    // std::cout << translation << std::endl;
+//     std::cout << "\n Translation vector" << std::endl;
+//     std::cout << translation << std::endl;
 
-    // std::cout << "\n Quaternion" << std::endl;
-    // std::cout << "w: " << quat_end.w() << " x: " << quat_end.x() << 
-    //              " y: " << quat_end.y() << " z: " << quat_end.z() << std::endl;
+//     std::cout << "\n Quaternion" << std::endl;
+//     std::cout << "w: " << quat_end.w() << " x: " << quat_end.x() << 
+//                  " y: " << quat_end.y() << " z: " << quat_end.z() << std::endl;
 
-    // std::cout << "\n Euler angles" << std::endl;
-    // std::cout << "Yaw: " << euler[0] << " Pitch: " << euler [1] << " Roll: " << 
-    //              euler[2] << std::endl;
+//     std::cout << "\n Euler angles" << std::endl;
+//     std::cout << "Yaw: " << euler[0] << " Pitch: " << euler [1] << " Roll: " << 
+//                  euler[2] << std::endl;
 
-    std::cout << "\n Pose" << std::endl;
-    std::cout << compute_pose(link_transform).transpose() << std::endl;       
+//     std::cout << "\n Pose" << std::endl;
+//     std::cout << compute_pose(link_transform).transpose() << std::endl;       
 
-    // std::cout << "\n Axis angle" << std::endl;    
-    // std::cout << angle_axis.axis().transpose() << std::endl;
-    // std::cout<< angle_axis.angle() << std::endl; 
+//     std::cout << "\n Axis angle" << std::endl;    
+//     std::cout << angle_axis.axis().transpose() << std::endl;
+//     std::cout<< angle_axis.angle() << std::endl; 
+// }
+
+void backup(const std::vector<Eigen::VectorXd> v, std::string file_type, std::string file_name){
+
+
+    if (file_type == "text"){
+        std::ofstream outFile(file_name);
+        for (const auto &element : v){
+            outFile << element.transpose() << "\n";
+        }
+    }
+
 }
 
 
@@ -197,12 +211,15 @@ int main(){
     std::cout << "Number of DoF: " << arm_robot->skeleton()->getNumDofs() << std::endl;
     std::cout<<"-----------------------------------"<<std::endl;
     std::cout<<"Moving second joint pi/2 radians"<<std::endl;
-    display_link_info(frame_transform);
-    std::cout << "Expected number of joints_states = " << simulation_time/timestep << std::endl;
+
+    std::cout << "Pose" << compute_pose(frame_transform).transpose() << std::endl;
+
     std::cout << "Number of joints_states recorded " << 
         std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.size() << std::endl;
+
     std::cout << "Number of pose_states recorded " << 
         std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states.size() << std::endl;
+
     std::cout << "Last pose recorded " << std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->
         pose_states.back().transpose() << std::endl;
 
@@ -210,6 +227,10 @@ int main(){
     std::cout << "Joint configuration " << std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->
         joints_states.back().transpose() << std::endl;
     std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
+
+    std::vector<Eigen::VectorXd> poses = std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states;
+    
+    backup(poses, "text", "poses.txt");
      
     std::cout<<"-----------------------------------"<<std::endl;
 
@@ -220,67 +241,69 @@ int main(){
     frame_transform = arm_robot->skeleton()->getBodyNode("right_arm_ee_link")->getWorldTransform();
     
     std::cout<<"Moving second joint -pi/2 radians"<<std::endl;
-    display_link_info(frame_transform);
-    std::cout << "Expected number of joints_states = " << simulation_time/timestep << std::endl;
+    
+    std::cout << "Pose" << compute_pose(frame_transform).transpose() << std::endl;
+    
     std::cout << "Number of joints_states recorded " << 
         std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.size() << std::endl;
-    std::cout << "Joint configuration " << std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->
-        joints_states.back().transpose() << std::endl;
-    //Reset joints_states vector 
-    std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
-    std::cout<<"-----------------------------------"<<std::endl;
-    
-    ctrl = {0., 0, 0., 0., 0., 0., 0.};
-    arm_robot->controllers()[0]->set_parameters(ctrl);
-    simu.run(simulation_time);
-   
-    frame_transform = arm_robot->skeleton()->getBodyNode("right_arm_ee_link")->getWorldTransform();
-    
-    std::cout<<"Moving second joint 0 radians"<<std::endl;
-    display_link_info(frame_transform);
-    std::cout << "Expected number of joints_states = " << simulation_time/timestep << std::endl;
-    std::cout << "Number of joints_states recorded " << 
-        std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.size() << std::endl;
-    std::cout << "Joint configuration " << std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->
-        joints_states.back().transpose() << std::endl;
-    //Reset joints_states vector 
-    std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
 
-    std::cout<<"-----------------------------------"<<std::endl;
-    
-    ctrl = {M_PI_2, M_PI_2, 0., 0., 0., 0., 0.};
-    arm_robot->controllers()[0]->set_parameters(ctrl);
-    simu.run(simulation_time);
-   
-    frame_transform = arm_robot->skeleton()->getBodyNode("right_arm_ee_link")->getWorldTransform();
-    
-    std::cout<<"Moving first joint pi/2 and second joint pi/2 radians"<<std::endl;
-    display_link_info(frame_transform);
-    std::cout << "Expected number of joints_states = " << simulation_time/timestep << std::endl;
-    std::cout << "Number of joints_states recorded " << 
-        std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.size() << std::endl;
     std::cout << "Joint configuration " << std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->
         joints_states.back().transpose() << std::endl;
     //Reset joints_states vector 
     std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
+    std::cout<<"-----------------------------------"<<std::endl;
+    
+    // ctrl = {0., 0, 0., 0., 0., 0., 0.};
+    // arm_robot->controllers()[0]->set_parameters(ctrl);
+    // simu.run(simulation_time);
+   
+    // frame_transform = arm_robot->skeleton()->getBodyNode("right_arm_ee_link")->getWorldTransform();
+    
+    // std::cout<<"Moving second joint 0 radians"<<std::endl;
+    // display_link_info(frame_transform);
+    // std::cout << "Expected number of joints_states = " << simulation_time/timestep << std::endl;
+    // std::cout << "Number of joints_states recorded " << 
+    //     std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.size() << std::endl;
+    // std::cout << "Joint configuration " << std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->
+    //     joints_states.back().transpose() << std::endl;
+    // //Reset joints_states vector 
+    // std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
 
-    std::cout<<"-----------------------------------"<<std::endl;
+    // std::cout<<"-----------------------------------"<<std::endl;
     
-    ctrl = {M_PI_2, -M_PI_2, 0., 0., 0., 0., 0.};
-    arm_robot->controllers()[0]->set_parameters(ctrl);
-    simu.run(simulation_time);
+    // ctrl = {M_PI_2, M_PI_2, 0., 0., 0., 0., 0.};
+    // arm_robot->controllers()[0]->set_parameters(ctrl);
+    // simu.run(simulation_time);
    
-    frame_transform = arm_robot->skeleton()->getBodyNode("right_arm_ee_link")->getWorldTransform();
+    // frame_transform = arm_robot->skeleton()->getBodyNode("right_arm_ee_link")->getWorldTransform();
     
-    std::cout<<"Moving first joint pi/2 and second joint -pi/2 radians"<<std::endl;
-    display_link_info(frame_transform);
-    std::cout << "Expected number of joints_states = " << simulation_time/timestep << std::endl;
-    std::cout << "Number of joints_states recorded " << 
-        std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.size() << std::endl;
-    std::cout << "Joint configuration " << std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->
-        joints_states.back().transpose() << std::endl;
-    //Reset joints_states vector 
-    std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
+    // std::cout<<"Moving first joint pi/2 and second joint pi/2 radians"<<std::endl;
+    // display_link_info(frame_transform);
+    // std::cout << "Expected number of joints_states = " << simulation_time/timestep << std::endl;
+    // std::cout << "Number of joints_states recorded " << 
+    //     std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.size() << std::endl;
+    // std::cout << "Joint configuration " << std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->
+    //     joints_states.back().transpose() << std::endl;
+    // //Reset joints_states vector 
+    // std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
+
+    // std::cout<<"-----------------------------------"<<std::endl;
+    
+    // ctrl = {M_PI_2, -M_PI_2, 0., 0., 0., 0., 0.};
+    // arm_robot->controllers()[0]->set_parameters(ctrl);
+    // simu.run(simulation_time);
+   
+    // frame_transform = arm_robot->skeleton()->getBodyNode("right_arm_ee_link")->getWorldTransform();
+    
+    // std::cout<<"Moving first joint pi/2 and second joint -pi/2 radians"<<std::endl;
+    // display_link_info(frame_transform);
+    // std::cout << "Expected number of joints_states = " << simulation_time/timestep << std::endl;
+    // std::cout << "Number of joints_states recorded " << 
+    //     std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.size() << std::endl;
+    // std::cout << "Joint configuration " << std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->
+    //     joints_states.back().transpose() << std::endl;
+    // //Reset joints_states vector 
+    // std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
 
     arm_robot.reset();
    
