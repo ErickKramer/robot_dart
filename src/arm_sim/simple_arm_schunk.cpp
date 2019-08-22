@@ -283,26 +283,26 @@ int main(){
     
     // std::cout << "Velocities " << arm_robot->skeleton()->getVelocities() << std::endl;
      
-    std::cout<<"-----------------------------------"<<std::endl;
+    // std::cout<<"-----------------------------------"<<std::endl;
 
-    ctrl = {0., -M_PI_2, 0., 0., 0., 0., 0.};
-    arm_robot->controllers()[0]->set_parameters(ctrl);
-    simu.run(simulation_time);
+    // ctrl = {0., -M_PI_2, 0., 0., 0., 0., 0.};
+    // arm_robot->controllers()[0]->set_parameters(ctrl);
+    // simu.run(simulation_time);
     
-    frame_transform = arm_robot->skeleton()->getBodyNode("right_arm_ee_link")->getWorldTransform();
+    // frame_transform = arm_robot->skeleton()->getBodyNode("right_arm_ee_link")->getWorldTransform();
     
-    std::cout<<"Moving second joint -pi/2 radians"<<std::endl;
+    // std::cout<<"Moving second joint -pi/2 radians"<<std::endl;
     
-    std::cout << "Pose" << compute_pose(frame_transform).transpose() << std::endl;
+    // std::cout << "Pose" << compute_pose(frame_transform).transpose() << std::endl;
     
-    std::cout << "Number of joints_states recorded " << 
-        std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.size() << std::endl;
+    // std::cout << "Number of joints_states recorded " << 
+    //     std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.size() << std::endl;
 
-    std::cout << "Joint configuration " << std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->
-        joints_states.back().transpose() << std::endl;
-    //Reset joints_states vector 
-    std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
-    std::cout<<"-----------------------------------"<<std::endl;
+    // std::cout << "Joint configuration " << std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->
+    //     joints_states.back().transpose() << std::endl;
+    // //Reset joints_states vector 
+    // std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
+    // std::cout<<"-----------------------------------"<<std::endl;
     
     // ctrl = {0., 0, 0., 0., 0., 0., 0.};
     // arm_robot->controllers()[0]->set_parameters(ctrl);
