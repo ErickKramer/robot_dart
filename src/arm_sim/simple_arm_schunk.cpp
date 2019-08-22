@@ -208,7 +208,7 @@ int main(){
     std::srand(std::time(NULL));
 
     double timestep = 0.0001;
-    double simulation_time = 3.;
+    double simulation_time = 5.;
     
     // Setting timestep of 0.001 seconds 
     robot_dart::RobotDARTSimu simu(timestep);
@@ -233,16 +233,19 @@ int main(){
     
     // Set PD gains
     std::static_pointer_cast<robot_dart::control::PDControl>(arm_robot->controllers()[0])
-      ->set_pd(10., 1.);
-
+      ->set_pd(30., 10.);
+    //set_pd(10., 1.);
     // Eigen::VectorXd velocities_limit = 
     //     Eigen::VectorXd::Zero(arm_robot->skeleton()->getNumDofs()) + 0.5;
-    Eigen::VectorXd velocities_limit = 
-        Eigen::VectorXd::Ones(arm_robot->skeleton()->getNumDofs())*0.5;
+    Eigen::VectorXd acc_upper_limit = 
+        Eigen::VectorXd::Ones(arm_robot->skeleton()->getNumDofs())*0.01;
+    Eigen::VectorXd acc_lower_limit = 
+        Eigen::VectorXd::Ones(arm_robot->skeleton()->getNumDofs())*-0.01;
     // arm_robot->skeleton()->setInitialVelocities(initial_velocities);
     // arm_robot->skeleton()->setVelocityUpperLimits(velocities_limit);
     // arm_robot->skeleton()->setVelocityLowerLimits(velocities_limit);
-    arm_robot->skeleton()->setAccelerationUpperLimits(velocities_limit);
+    arm_robot->skeleton()->setAccelerationUpperLimits(acc_upper_limit);
+    arm_robot->skeleton()->setAccelerationLowerLimits(acc_lower_limit);
    
    
     // Specify collision detection
