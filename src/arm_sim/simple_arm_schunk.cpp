@@ -168,6 +168,28 @@ double movement_duration(std::vector<Eigen::VectorXd> velocities, double timeste
 //     std::cout<< angle_axis.angle() << std::endl; 
 // }
 
+void display_run_results(robot_dart::RobotDARTSimu simu, double timestep){
+    // std::cout << "Pose" << compute_pose(frame_transform).transpose() << std::endl;
+    std::cout << "Number of joints_states recorded " << 
+        std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.size() << std::endl;
+    std::cout << "Final joints configuration " << std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->
+        joints_states.back().transpose() << std::endl;
+
+    // Collectes recorded poses 
+    std::vector<Eigen::VectorXd> poses = std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states;
+    std::cout << "Number of pose_states recorded " << 
+        poses.size() << std::endl;
+    std::cout << "Pose of the end effector " << poses.back().transpose() << std::endl;
+
+    // Collecte recorded velocities
+    std::vector<Eigen::VectorXd> velocities = std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities;
+    // backup(velocities, "text", "velocities.txt");
+    
+    // Computes movement duration
+    double duration = movement_duration(velocities, timestep);
+    std::cout << "Arm stoped at " << duration << " seconds " << std::endl;
+}
+
 void backup(const std::vector<Eigen::VectorXd> v, std::string file_type, std::string file_name){
 
 
@@ -185,7 +207,7 @@ int main(){
     // Create robot_dart simulator
     std::srand(std::time(NULL));
 
-    double timestep = 0.001;
+    double timestep = 0.0001;
     double simulation_time = 3.;
     
     // Setting timestep of 0.001 seconds 
@@ -203,8 +225,8 @@ int main(){
     arm_robot->set_position_enforced(true);
 
 
-    // Set of desired positions of the joints in radians
-    std::vector<double> ctrl = {0., M_PI_2, 0., 0., 0., 0., 0.};
+    // Set of desired initial configuration
+    std::vector<double> ctrl = {0., 0., 0., 0., 0., 0., 0.};
 
     // Add a PD-controller to the arm 
     arm_robot->add_controller(std::make_shared<robot_dart::control::PDControl>(ctrl));
@@ -212,6 +234,15 @@ int main(){
     // Set PD gains
     std::static_pointer_cast<robot_dart::control::PDControl>(arm_robot->controllers()[0])
       ->set_pd(10., 1.);
+
+    // Eigen::VectorXd velocities_limit = 
+    //     Eigen::VectorXd::Zero(arm_robot->skeleton()->getNumDofs()) + 0.5;
+    Eigen::VectorXd velocities_limit = 
+        Eigen::VectorXd::Ones(arm_robot->skeleton()->getNumDofs())*0.5;
+    // arm_robot->skeleton()->setInitialVelocities(initial_velocities);
+    // arm_robot->skeleton()->setVelocityUpperLimits(velocities_limit);
+    // arm_robot->skeleton()->setVelocityLowerLimits(velocities_limit);
+    arm_robot->skeleton()->setAccelerationUpperLimits(velocities_limit);
    
    
     // Specify collision detection
@@ -238,126 +269,55 @@ int main(){
     simu.add_descriptor(std::make_shared<JointStateDesc>(simu));
     simu.add_descriptor(std::make_shared<PoseStateDesc>(simu));
     simu.add_descriptor(std::make_shared<JointVelDesc>(simu));
-    
+
+    // Display arm information    
     std::cout << "Arm: " << arm_robot->name() << std::endl;
     std::cout << "Number of DoF: " << arm_robot->skeleton()->getNumDofs() << std::endl;
+    std::cout << "Acceleration lower " << arm_robot -> skeleton() -> getAccelerationLowerLimits().transpose() << std::endl;
+    std::cout << "Acceleration higher " << arm_robot -> skeleton() -> getAccelerationUpperLimits().transpose() << std::endl;
+    std::cout << "Velocity lower " << arm_robot -> skeleton() -> getVelocityLowerLimits().transpose() << std::endl;
+    std::cout << "Velocity higher " << arm_robot -> skeleton() -> getVelocityUpperLimits().transpose() << std::endl;
     std::cout<<"-----------------------------------"<<std::endl;
     
-    // Run the simulator for 2 seconds 
+    // Run the simulator for seconds 
     simu.run(simulation_time);
+    display_run_results(simu, timestep);
+
+    // Reset States vector
+    std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
+    std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states.clear();
+    std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities.clear();
     
-    //Transform docs->https://eigen.tuxfamily.org/dox/classEigen_1_1Transform.html
-    Eigen::Isometry3d frame_transform;
-    frame_transform = arm_robot->skeleton()->getBodyNode("right_arm_ee_link")->getWorldTransform();
+
+    std::cout<<"-----------------------------------"<<std::endl;
 
     std::cout<<"Moving second joint pi/2 radians"<<std::endl;
-
-    std::cout << "Pose" << compute_pose(frame_transform).transpose() << std::endl;
-
-    std::cout << "Number of joints_states recorded " << 
-        std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.size() << std::endl;
-
-    std::cout << "Number of pose_states recorded " << 
-        std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states.size() << std::endl;
-
-    std::vector<Eigen::VectorXd> poses = std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states;
-    
-    std::cout << "Last pose recorded " << poses.back().transpose() << std::endl;
-
-    //Reset joints_states vector 
-    std::cout << "Joint configuration " << std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->
-        joints_states.back().transpose() << std::endl;
-    std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
-
-    // Backup the stored poses in a text file
-    // backup(poses, "text", "poses.txt");
-
+    ctrl = {0., M_PI_2, 0., 0., 0., 0., 0.};
+    arm_robot->controllers()[0]->set_parameters(ctrl);
+    simu.run(simulation_time);
+    display_run_results(simu, timestep);
     std::vector<Eigen::VectorXd> velocities = std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities;
     backup(velocities, "text", "velocities.txt");
+    
+    // Reset States vector
+    std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
+    std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states.clear();
+    std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities.clear();
+    
+    std::cout<<"-----------------------------------"<<std::endl;
 
-    double duration = movement_duration(velocities, timestep);
-    std::cout << "Arm stoped at " << duration << " seconds" << std::endl;
-
-    // Eigen::VectorXd last_velocity = velocities.back(); 
-    // std::cout << last_velocity.isZero(1e-3) << std::endl;
-    
-    // std::cout << "Velocities " << arm_robot->skeleton()->getVelocities() << std::endl;
-     
-    // std::cout<<"-----------------------------------"<<std::endl;
-
-    // ctrl = {0., -M_PI_2, 0., 0., 0., 0., 0.};
-    // arm_robot->controllers()[0]->set_parameters(ctrl);
-    // simu.run(simulation_time);
-    
-    // frame_transform = arm_robot->skeleton()->getBodyNode("right_arm_ee_link")->getWorldTransform();
-    
-    // std::cout<<"Moving second joint -pi/2 radians"<<std::endl;
-    
-    // std::cout << "Pose" << compute_pose(frame_transform).transpose() << std::endl;
-    
-    // std::cout << "Number of joints_states recorded " << 
-    //     std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.size() << std::endl;
-
-    // std::cout << "Joint configuration " << std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->
-    //     joints_states.back().transpose() << std::endl;
-    // //Reset joints_states vector 
-    // std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
-    // std::cout<<"-----------------------------------"<<std::endl;
-    
-    // ctrl = {0., 0, 0., 0., 0., 0., 0.};
-    // arm_robot->controllers()[0]->set_parameters(ctrl);
-    // simu.run(simulation_time);
+    std::cout<<"Moving second joint -pi/2 radians"<<std::endl;
+    ctrl = {0., -M_PI_2, 0., 0., 0., 0., 0.};
+    arm_robot->controllers()[0]->set_parameters(ctrl);
+    simu.run(simulation_time);
+    display_run_results(simu, timestep);
    
-    // frame_transform = arm_robot->skeleton()->getBodyNode("right_arm_ee_link")->getWorldTransform();
+    // Reset States vector
+    std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
+    std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states.clear();
+    std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities.clear();
     
-    // std::cout<<"Moving second joint 0 radians"<<std::endl;
-    // display_link_info(frame_transform);
-    // std::cout << "Expected number of joints_states = " << simulation_time/timestep << std::endl;
-    // std::cout << "Number of joints_states recorded " << 
-    //     std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.size() << std::endl;
-    // std::cout << "Joint configuration " << std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->
-    //     joints_states.back().transpose() << std::endl;
-    // //Reset joints_states vector 
-    // std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
-
-    // std::cout<<"-----------------------------------"<<std::endl;
-    
-    // ctrl = {M_PI_2, M_PI_2, 0., 0., 0., 0., 0.};
-    // arm_robot->controllers()[0]->set_parameters(ctrl);
-    // simu.run(simulation_time);
-   
-    // frame_transform = arm_robot->skeleton()->getBodyNode("right_arm_ee_link")->getWorldTransform();
-    
-    // std::cout<<"Moving first joint pi/2 and second joint pi/2 radians"<<std::endl;
-    // display_link_info(frame_transform);
-    // std::cout << "Expected number of joints_states = " << simulation_time/timestep << std::endl;
-    // std::cout << "Number of joints_states recorded " << 
-    //     std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.size() << std::endl;
-    // std::cout << "Joint configuration " << std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->
-    //     joints_states.back().transpose() << std::endl;
-    // //Reset joints_states vector 
-    // std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
-
-    // std::cout<<"-----------------------------------"<<std::endl;
-    
-    // ctrl = {M_PI_2, -M_PI_2, 0., 0., 0., 0., 0.};
-    // arm_robot->controllers()[0]->set_parameters(ctrl);
-    // simu.run(simulation_time);
-   
-    // frame_transform = arm_robot->skeleton()->getBodyNode("right_arm_ee_link")->getWorldTransform();
-    
-    // std::cout<<"Moving first joint pi/2 and second joint -pi/2 radians"<<std::endl;
-    // display_link_info(frame_transform);
-    // std::cout << "Expected number of joints_states = " << simulation_time/timestep << std::endl;
-    // std::cout << "Number of joints_states recorded " << 
-    //     std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.size() << std::endl;
-    // std::cout << "Joint configuration " << std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->
-    //     joints_states.back().transpose() << std::endl;
-    // //Reset joints_states vector 
-    // std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
-
     arm_robot.reset();
-   
     return 0; 
 
 }
