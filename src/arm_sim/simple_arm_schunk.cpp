@@ -17,6 +17,7 @@
 #endif
 
 Eigen::VectorXd compute_pose(Eigen::Isometry3d link_transform);
+// double movement_duration(std::vector<VectorXd> velocities, double timestep);
 
 
 
@@ -74,6 +75,8 @@ struct JointVelDesc : public robot_dart::descriptor::BaseDescriptor{
     std::vector<Eigen::VectorXd> joints_velocities;
 };
 
+
+
 Eigen::VectorXd compute_pose(Eigen::Isometry3d link_transform){
     // Computes rotation matrix 
     Eigen::Matrix3d rot_matrix = link_transform.rotation();
@@ -90,6 +93,23 @@ Eigen::VectorXd compute_pose(Eigen::Isometry3d link_transform){
     pose << translation, euler;
 
     return pose; 
+}
+
+double movement_duration(std::vector<Eigen::VectorXd> velocities, double timestep){
+    double index = 0;
+    double threshold = 1e-3;
+
+    for (const auto &element : velocities){
+        if (element.isZero(threshold)){
+            std::cout << "Index of joints velocities lower than threshold " << threshold << 
+                " is " << index << std::endl;
+            return timestep * index;
+        }
+        index++;
+    }
+
+    return velocities.size();
+
 }
 
 
@@ -255,8 +275,11 @@ int main(){
     std::vector<Eigen::VectorXd> velocities = std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities;
     backup(velocities, "text", "velocities.txt");
 
-    Eigen::VectorXd last_velocity = velocities.back(); 
-    std::cout << last_velocity.isZero(1e-3) << std::endl;
+    double duration = movement_duration(velocities, timestep);
+    std::cout << "Arm stoped at " << duration << " seconds" << std::endl;
+
+    // Eigen::VectorXd last_velocity = velocities.back(); 
+    // std::cout << last_velocity.isZero(1e-3) << std::endl;
     
     // std::cout << "Velocities " << arm_robot->skeleton()->getVelocities() << std::endl;
      
