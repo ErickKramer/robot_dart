@@ -13,18 +13,23 @@
 int main(){
     std::srand(std::time(NULL));
 
+    double timestep = 0.001;
+    double sim_duration = 10.;
     // Creates simulation
-    robot_dart::RobotDARTSimu simu(0.001);
+    robot_dart::RobotDARTSimu simu(timestep);
 
     // Indicated the path where the meshes files are located 
-    std::vector<std::pair<std::string, std::string>> packages = {{"fetch", 
-        std::string(RESPATH) + "/models/meshes/fetch"}};
+    // std::vector<std::pair<std::string, std::string>> packages = {{"fetch", 
+    //     std::string(RESPATH) + "/models/meshes/fetch"}};
     
     // std::vector<std::pair<std::string, std::string>> packages = {{"iiwa14", 
     //     std::string(RESPATH) + "/models/meshes/iiwa14"}};
 
     // std::vector<std::pair<std::string, std::string>> packages = {{"schunk", 
     //     std::string(RESPATH) + "/models/meshes/lwa4d"}};
+    
+    std::vector<std::pair<std::string, std::string>> packages = {{"telerob", 
+        std::string(RESPATH) + "/models/meshes/telerob"}};
 
     #ifdef GRAPHIC
         // Generates the world
@@ -37,9 +42,10 @@ int main(){
 
 
     // Read the robot from the urdf
-    auto dummy_robot = std::make_shared<robot_dart::Robot>("res/models/fetch_arm.urdf", packages, "fetch arm");
+    // auto dummy_robot = std::make_shared<robot_dart::Robot>("res/models/fetch_arm.urdf", packages, "fetch arm");
     // auto dummy_robot = std::make_shared<robot_dart::Robot>("res/models/iiwa14.urdf", packages, "iiwa14 arm");
     // auto dummy_robot = std::make_shared<robot_dart::Robot>("res/models/arm_schunk_with_collisions.urdf", packages, "schunk lwa4d arm");
+    auto dummy_robot = std::make_shared<robot_dart::Robot>("res/models/telerob.urdf", packages, "telerob arm");
 
     // simu.add_floor(10., 0.2);
 
@@ -66,7 +72,7 @@ int main(){
     std::cout << "------------------------------------- " << std::endl;
 
     simu.add_robot(dummy_robot);
-    simu.run(3.);
+    simu.run(sim_duration);
 
     // Vector to move the position of the arm in the world
     Eigen::Isometry3d tf = Eigen::Isometry3d::Identity();
@@ -80,19 +86,19 @@ int main(){
     // Move the base of the arm
     dummy_robot->set_base_pose(tf);
 
-    Eigen::VectorXd robot_positions = dummy_robot->skeleton()->getPositions();
-    Eigen::VectorXd robot_velocities = dummy_robot->skeleton()->getVelocities();
+    // Eigen::VectorXd robot_positions = dummy_robot->skeleton()->getPositions();
+    // Eigen::VectorXd robot_velocities = dummy_robot->skeleton()->getVelocities();
 
-    std::cout << "Robot positions " << robot_positions.transpose() << std::endl;
-    std::cout << "Robot velocities " << robot_velocities.transpose() << std::endl;
+    // std::cout << "Robot positions " << robot_positions.transpose() << std::endl;
+    // std::cout << "Robot velocities " << robot_velocities.transpose() << std::endl;
 
     // Get the mass matrix of the arm
-    Eigen::MatrixXd mass_matrix = dummy_robot->skeleton()->getMassMatrix();
-    std::cout << "Mass Matrix \n" << mass_matrix << std::endl;
-    std::cout << "Mass of the arm " << dummy_robot->skeleton()->getMass() << std::endl;
+    // Eigen::MatrixXd mass_matrix = dummy_robot->skeleton()->getMassMatrix();
+    // std::cout << "Mass Matrix \n" << mass_matrix << std::endl;
+    // std::cout << "Mass of the arm " << dummy_robot->skeleton()->getMass() << std::endl;
 
 
-    // Runs simulator for 5 seconds
-    simu.run(3.);
+    // Runs simulator
+    simu.run(sim_duration);
     return 0;
 }
