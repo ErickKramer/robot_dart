@@ -3,6 +3,8 @@
 
 #include <dart/collision/fcl/FCLCollisionDetector.hpp>
 #include <dart/constraint/ConstraintSolver.hpp>
+#include <dart/dart.hpp>
+#include <dart/gui/osg/osg.hpp>
 
 #ifdef GRAPHIC
 #include <robot_dart/graphics/graphics.hpp>
@@ -19,8 +21,8 @@ int main(){
     robot_dart::RobotDARTSimu simu(timestep);
 
     // Indicated the path where the meshes files are located 
-    // std::vector<std::pair<std::string, std::string>> packages = {{"fetch", 
-    //     std::string(RESPATH) + "/models/meshes/fetch"}};
+    std::vector<std::pair<std::string, std::string>> packages = {{"fetch", 
+        std::string(RESPATH) + "/models/meshes/fetch"}};
     
     // std::vector<std::pair<std::string, std::string>> packages = {{"iiwa14", 
     //     std::string(RESPATH) + "/models/meshes/iiwa14"}};
@@ -28,12 +30,12 @@ int main(){
     // std::vector<std::pair<std::string, std::string>> packages = {{"schunk", 
     //     std::string(RESPATH) + "/models/meshes/lwa4d"}};
     
-    std::vector<std::pair<std::string, std::string>> packages = {{"telerob", 
-        std::string(RESPATH) + "/models/meshes/telerob"}};
+    // std::vector<std::pair<std::string, std::string>> packages = {{"telerob", 
+    //     std::string(RESPATH) + "/models/meshes/telerob"}};
 
     #ifdef GRAPHIC
         // Generates the world
-        simu.set_graphics(std::make_shared<robot_dart::graphics::Graphics>(simu.world(), 1920,1080));
+        simu.set_graphics(std::make_shared<robot_dart::graphics::Graphics>(simu.world(), 1920,1080, true, false));
 
         // Speciy the location of the cameras
         std::static_pointer_cast<robot_dart::graphics::Graphics>(simu.graphics())->
@@ -42,10 +44,10 @@ int main(){
 
 
     // Read the robot from the urdf
-    // auto dummy_robot = std::make_shared<robot_dart::Robot>("res/models/fetch_arm.urdf", packages, "fetch arm");
+    auto dummy_robot = std::make_shared<robot_dart::Robot>("res/models/fetch_arm.urdf", packages, "fetch arm");
     // auto dummy_robot = std::make_shared<robot_dart::Robot>("res/models/iiwa14.urdf", packages, "iiwa14 arm");
     // auto dummy_robot = std::make_shared<robot_dart::Robot>("res/models/arm_schunk_with_collisions.urdf", packages, "schunk lwa4d arm");
-    auto dummy_robot = std::make_shared<robot_dart::Robot>("res/models/telerob.urdf", packages, "telerob arm");
+    // auto dummy_robot = std::make_shared<robot_dart::Robot>("res/models/telerob.urdf", packages, "telerob arm");
 
     // simu.add_floor(10., 0.2);
 

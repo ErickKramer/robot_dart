@@ -9,11 +9,15 @@ namespace robot_dart {
     namespace graphics {
         class Graphics : public BaseGraphics {
         public:
-            Graphics(const dart::simulation::WorldPtr& world, unsigned int width = 640, unsigned int height = 480, bool shadowed = true) : _world(world), _width(width), _height(height), _frame_counter(0), _enabled(true)
+            Graphics(const dart::simulation::WorldPtr& world, unsigned int width = 640, unsigned int height = 480, bool shadowed = true, bool real_time = false) : _world(world), _width(width), _height(height), _frame_counter(0), _enabled(true)
             {
                 _osg_viewer = new dart::gui::osg::Viewer;
                 _osg_viewer->setThreadingModel(osgViewer::ViewerBase::ThreadingModel::SingleThreaded);
-                _osg_world_node = new dart::gui::osg::WorldNode(world);
+                if (real_time){
+                    _osg_world_node = new dart::gui::osg::RealTimeWorldNode(world);
+                }else{
+                    _osg_world_node = new dart::gui::osg::WorldNode(world);
+                }
                 if (shadowed)
                     _osg_world_node->setShadowTechnique(dart::gui::osg::WorldNode::createDefaultShadowTechnique(_osg_viewer));
                 set_render_period(world->getTimeStep());
