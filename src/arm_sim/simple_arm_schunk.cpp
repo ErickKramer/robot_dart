@@ -208,7 +208,7 @@ int main(){
     std::srand(std::time(NULL));
 
     double timestep = 0.0001;
-    double simulation_time = 5.;
+    double simulation_time = 10.;
     
     // Setting timestep of 0.001 seconds 
     robot_dart::RobotDARTSimu simu(timestep);
