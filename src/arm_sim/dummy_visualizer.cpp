@@ -3,6 +3,7 @@
 
 #include <dart/collision/fcl/FCLCollisionDetector.hpp>
 #include <dart/constraint/ConstraintSolver.hpp>
+#include <dart/config.hpp>
 
 #ifdef GRAPHIC
 #include <robot_dart/graphics/graphics.hpp>
@@ -11,6 +12,12 @@
 #include <robot_dart/robot.hpp>
 
 int main(){
+
+    #if DART_VERSION_AT_LEAST(6,10,0)
+        std::cout << " DART 6.10 found " << std::endl;
+    #else
+        std::cout << " Older version of DART " << std::endl;
+    #endif  
     std::srand(std::time(NULL));
 
     double timestep = 0.001;
