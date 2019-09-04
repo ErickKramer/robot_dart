@@ -43,7 +43,11 @@ int main(){
         
         // Pass instruction message to the viewer 
         std::static_pointer_cast<robot_dart::graphics::Graphics>(simu.graphics())->
-            set_instructions("Press space bar to start simulation");
+            add_instruction("Visualization of URDFs \n");
+        
+        // Display instructions
+        std::static_pointer_cast<robot_dart::graphics::Graphics>(simu.graphics())->
+            display_instructions();
     #endif
 
 
