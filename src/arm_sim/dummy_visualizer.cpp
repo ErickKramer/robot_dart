@@ -87,30 +87,30 @@ int main(){
     simu.run(sim_duration);
 
     // Vector to move the position of the arm in the world
-    Eigen::Isometry3d tf = Eigen::Isometry3d::Identity();
+    // Eigen::Isometry3d tf = Eigen::Isometry3d::Identity();
 
-    // Translate the base robot 
-    tf.translation() = Eigen::Vector3d(0.5, 0.5, 0.0);
+    // // Translate the base robot 
+    // tf.translation() = Eigen::Vector3d(0.5, 0.5, 0.0);
     
-    // Rotate the base of the robot
-    tf.rotate(Eigen::AngleAxisd(-M_PI_4, Eigen::Vector3d::UnitY()));
+    // // Rotate the base of the robot
+    // tf.rotate(Eigen::AngleAxisd(-M_PI_4, Eigen::Vector3d::UnitY()));
 
-    // Move the base of the arm
-    dummy_robot->set_base_pose(tf);
+    // // Move the base of the arm
+    // dummy_robot->set_base_pose(tf);
 
-    // Eigen::VectorXd robot_positions = dummy_robot->skeleton()->getPositions();
-    // Eigen::VectorXd robot_velocities = dummy_robot->skeleton()->getVelocities();
+    // // Eigen::VectorXd robot_positions = dummy_robot->skeleton()->getPositions();
+    // // Eigen::VectorXd robot_velocities = dummy_robot->skeleton()->getVelocities();
 
-    // std::cout << "Robot positions " << robot_positions.transpose() << std::endl;
-    // std::cout << "Robot velocities " << robot_velocities.transpose() << std::endl;
+    // // std::cout << "Robot positions " << robot_positions.transpose() << std::endl;
+    // // std::cout << "Robot velocities " << robot_velocities.transpose() << std::endl;
 
-    // Get the mass matrix of the arm
-    // Eigen::MatrixXd mass_matrix = dummy_robot->skeleton()->getMassMatrix();
-    // std::cout << "Mass Matrix \n" << mass_matrix << std::endl;
-    // std::cout << "Mass of the arm " << dummy_robot->skeleton()->getMass() << std::endl;
+    // // Get the mass matrix of the arm
+    // // Eigen::MatrixXd mass_matrix = dummy_robot->skeleton()->getMassMatrix();
+    // // std::cout << "Mass Matrix \n" << mass_matrix << std::endl;
+    // // std::cout << "Mass of the arm " << dummy_robot->skeleton()->getMass() << std::endl;
 
 
-    // Runs simulator
-    simu.run(sim_duration);
+    // // Runs simulator
+    // simu.run(sim_duration);
     return 0;
 }
