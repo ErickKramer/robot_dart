@@ -374,38 +374,40 @@
     </collision>
   </link>
   <joint name="pg70_finger_left_joint" type="prismatic">
-    <origin rpy="0 0 0" xyz="0 0.035 0.0789"/>
-    <!--origin rpy="0 0 0" xyz="0 0 0.0789"/-->
+    <!--origin rpy="0 0 0" xyz="0 0.035 0.0789"/-->
+    <origin rpy="0 0 0" xyz="0 -0.015425 0.0789"/>
     <parent link="pg70_palm_link"/>
     <child link="pg70_finger_left_link"/>
+    <!--axis xyz="0 1 0"/-->
     <axis xyz="0 1 0"/>
     <limit effort="10" lower="-0.001" upper="0.061" velocity="2.0"/>
   </joint>
   <link name="pg70_finger_left_link">
     <inertial>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="-0.01 0 0"/>
       <mass value="1"/>
       <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
     </inertial>
     <visual>
       <geometry>
-        <box size="0.03 0.01 0.07"/>
+        <box size="0.03 0.01 0.1"/>
       </geometry>
-      <material name="black">
-        <color rgba="0 0 0 1"/>
+      <material name="red">
+        <color rgba="1 0 0 1"/>
       </material>
     </visual>
     <collision>
       <geometry>
-        <box size="0.03 0.01 0.07"/>
+        <box size="0.03 0.01 0.1"/>
       </geometry>
-      <material name="black">
-        <color rgba="0 0 0 1"/>
+      <material name="red">
+        <color rgba="1 0 0 1"/>
       </material>
     </collision>
   </link>
-  <!--joint name="pg70_finger_right_joint" type="prismatic">
-    <origin rpy="-0 0 0" xyz="0 -0.035 0.0789"/>
+  <joint name="pg70_finger_right_joint" type="prismatic">
+    <!--origin rpy="-0 0 0" xyz="0 -0.035 0.0789"/-->
+    <origin rpy="0 0 0" xyz="0 0.015425 0.0789"/>
     <parent link="pg70_palm_link"/>
     <child link="pg70_finger_right_link"/>
     <axis xyz="0 -1 0"/>
@@ -420,20 +422,20 @@
     </inertial>
     <visual>
       <geometry>
-        <box size="0.03 0.01 0.07"/>
+        <box size="0.03 0.01 0.1"/>
       </geometry>
-      <material name="black">
-        <color rgba="0 0 0 1"/>
+      <material name="red">
+        <color rgba="1 0 0 1"/>
       </material>
     </visual>
     <collision>
       <geometry>
-        <box size="0.03 0.01 0.07"/>
+        <box size="0.03 0.01 0.1"/>
       </geometry>
-      <material name="black">
-        <color rgba="0 0 0 1"/>
+      <material name="red">
+        <color rgba="1 0 0 1"/>
       </material>
     </collision>
-  </link-->
+  </link>
 </robot>
 
