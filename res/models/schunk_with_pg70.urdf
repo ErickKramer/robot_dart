@@ -374,8 +374,8 @@
     </collision>
   </link>
   <joint name="pg70_finger_left_joint" type="prismatic">
-    <!--origin rpy="0 0 0" xyz="0 0.035 0.0789"/-->
-    <origin rpy="0 0 0" xyz="0 0 0.0789"/>
+    <origin rpy="0 0 0" xyz="0 0.035 0.0789"/>
+    <!--origin rpy="0 0 0" xyz="0 0 0.0789"/-->
     <parent link="pg70_palm_link"/>
     <child link="pg70_finger_left_link"/>
     <axis xyz="0 1 0"/>
