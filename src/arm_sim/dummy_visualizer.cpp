@@ -40,6 +40,10 @@ int main(){
         // Speciy the location of the cameras
         std::static_pointer_cast<robot_dart::graphics::Graphics>(simu.graphics())->
             look_at({0., 3., 1.}, {0., 0., 0.});
+        
+        // Pass instruction message to the viewer 
+        std::static_pointer_cast<robot_dart::graphics::Graphics>(simu.graphics())->
+            set_instructions("Press space bar to start simulation");
     #endif
 
 
