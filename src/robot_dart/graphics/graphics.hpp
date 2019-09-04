@@ -52,7 +52,7 @@ namespace robot_dart {
                     _osg_viewer->realize();
                 }
 
-                // process next frame
+                // process next framerefresh
                 if (_frame_counter % _render_period == 0)
                     _osg_viewer->frame();
                 _frame_counter++;
@@ -83,6 +83,12 @@ namespace robot_dart {
                 _osg_viewer->getCameraManipulator()->setHomePosition(
                     osg::Vec3d(_camera_pos(0), _camera_pos(1), _camera_pos(2)), osg::Vec3d(_look_at(0), _look_at(1), _look_at(2)), osg::Vec3d(_camera_up(0), _camera_up(1), _camera_up(2)));
                 _osg_viewer->home();
+            }
+
+            void set_instructions(const std::string& instructions){
+                // Add instructions to the viewer and displays them
+                _osg_viewer->addInstructionText(instructions);
+                std::cout << _osg_viewer->getInstructions() << std::endl;
             }
 
 #if DART_VERSION_AT_LEAST(6, 8, 0)
