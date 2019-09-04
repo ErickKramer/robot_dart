@@ -85,9 +85,13 @@ namespace robot_dart {
                 _osg_viewer->home();
             }
 
-            void set_instructions(const std::string& instructions){
-                // Add instructions to the viewer and displays them
-                _osg_viewer->addInstructionText(instructions);
+            void add_instruction(const std::string& instruction){
+                // Add instruction to the viewer
+                _osg_viewer->addInstructionText(instruction);
+            }
+
+            void display_instructions(){
+                // Display instructions of the viewer
                 std::cout << _osg_viewer->getInstructions() << std::endl;
             }
 
