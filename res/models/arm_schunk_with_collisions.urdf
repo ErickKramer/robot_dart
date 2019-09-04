@@ -76,13 +76,13 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="package://schunk/arm_podest_link.stl"/>
+        <mesh filename="package://lwa4d/arm_podest_link.stl"/>
       </geometry>
       <material name="Schunk/LightGrey"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://schunk/arm_podest_link.stl"/>
+        <mesh filename="package://lwa4d/arm_podest_link.stl"/>
       </geometry>
     </collision>
   </link>
@@ -119,13 +119,13 @@
 -->
     <visual>
       <geometry>
-        <mesh filename="package://schunk/arm_1_link.stl"/>
+        <mesh filename="package://lwa4d/arm_1_link.stl"/>
       </geometry>
       <material name="Schunk/LightGrey"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://schunk/arm_1_link.stl"/>
+        <mesh filename="package://lwa4d/arm_1_link.stl"/>
       </geometry>
     </collision>
   </link>
@@ -150,13 +150,13 @@
 -->
     <visual>
       <geometry>
-        <mesh filename="package://schunk/arm_2_link.stl"/>
+        <mesh filename="package://lwa4d/arm_2_link.stl"/>
       </geometry>
       <material name="Schunk/Black"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://schunk/arm_2_link_collision.stl"/>
+        <mesh filename="package://lwa4d/arm_2_link_collision.stl"/>
       </geometry>
     </collision>
   </link>
@@ -181,13 +181,13 @@
 -->
     <visual>
       <geometry>
-        <mesh filename="package://schunk/arm_3_link.stl"/>
+        <mesh filename="package://lwa4d/arm_3_link.stl"/>
       </geometry>
       <material name="Schunk/LightGrey"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://schunk/arm_3_link_collision.stl"/>
+        <mesh filename="package://lwa4d/arm_3_link_collision.stl"/>
       </geometry>
     </collision>
   </link>
@@ -212,13 +212,13 @@
 -->
     <visual>
       <geometry>
-        <mesh filename="package://schunk/arm_4_link.stl"/>
+        <mesh filename="package://lwa4d/arm_4_link.stl"/>
       </geometry>
       <material name="Schunk/Black"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://schunk/arm_4_link_collision.stl"/>
+        <mesh filename="package://lwa4d/arm_4_link_collision.stl"/>
       </geometry>
     </collision>
   </link>
@@ -243,13 +243,13 @@
 -->
     <visual>
       <geometry>
-        <mesh filename="package://schunk/arm_5_link.stl"/>
+        <mesh filename="package://lwa4d/arm_5_link.stl"/>
       </geometry>
       <material name="Schunk/LightGrey"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://schunk/arm_5_link_collision.stl"/>
+        <mesh filename="package://lwa4d/arm_5_link_collision.stl"/>
       </geometry>
     </collision>
   </link>
@@ -274,13 +274,13 @@
 -->
     <visual>
       <geometry>
-        <mesh filename="package://schunk/arm_6_link.stl"/>
+        <mesh filename="package://lwa4d/arm_6_link.stl"/>
       </geometry>
       <material name="Schunk/Black"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://schunk/arm_6_link_collision.stl"/>
+        <mesh filename="package://lwa4d/arm_6_link_collision.stl"/>
       </geometry>
     </collision>
   </link>
@@ -305,13 +305,13 @@
 -->
     <visual>
       <geometry>
-        <mesh filename="package://schunk/arm_7_link.stl"/>
+        <mesh filename="package://lwa4d/arm_7_link.stl"/>
       </geometry>
       <material name="Schunk/LightGrey"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://schunk/arm_7_link.stl"/>
+        <mesh filename="package://lwa4d/arm_7_link.stl"/>
       </geometry>
     </collision>
   </link>
