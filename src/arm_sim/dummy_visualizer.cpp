@@ -21,14 +21,14 @@ int main(){
     robot_dart::RobotDARTSimu simu(timestep);
 
     // Indicated the path where the meshes files are located 
-    std::vector<std::pair<std::string, std::string>> packages = {{"fetch", 
-        std::string(RESPATH) + "/models/meshes/fetch"}};
+    // std::vector<std::pair<std::string, std::string>> packages = {{"fetch", 
+    //     std::string(RESPATH) + "/models/meshes/fetch"}};
     
     // std::vector<std::pair<std::string, std::string>> packages = {{"iiwa14", 
     //     std::string(RESPATH) + "/models/meshes/iiwa14"}};
 
-    // std::vector<std::pair<std::string, std::string>> packages = {{"schunk", 
-    //     std::string(RESPATH) + "/models/meshes/lwa4d"}};
+    std::vector<std::pair<std::string, std::string>> packages = {{"lwa4d", 
+        std::string(RESPATH) + "/models/meshes/lwa4d"}};
     
     // std::vector<std::pair<std::string, std::string>> packages = {{"telerob", 
     //     std::string(RESPATH) + "/models/meshes/telerob"}};
@@ -39,7 +39,7 @@ int main(){
 
         // Speciy the location of the cameras
         std::static_pointer_cast<robot_dart::graphics::Graphics>(simu.graphics())->
-            look_at({0., 3., 1.}, {0., 0., 0.});
+            look_at({0., 5., 1.}, {0., 0., 0.});
         
         // Pass instruction message to the viewer 
         std::static_pointer_cast<robot_dart::graphics::Graphics>(simu.graphics())->
@@ -52,10 +52,12 @@ int main(){
 
 
     // Read the robot from the urdf
-    auto dummy_robot = std::make_shared<robot_dart::Robot>("res/models/fetch_arm.urdf", packages, "fetch arm");
+    // auto dummy_robot = std::make_shared<robot_dart::Robot>("res/models/fetch_arm.urdf", packages, "fetch arm");
     // auto dummy_robot = std::make_shared<robot_dart::Robot>("res/models/iiwa14.urdf", packages, "iiwa14 arm");
     // auto dummy_robot = std::make_shared<robot_dart::Robot>("res/models/arm_schunk_with_collisions.urdf", packages, "schunk lwa4d arm");
     // auto dummy_robot = std::make_shared<robot_dart::Robot>("res/models/telerob.urdf", packages, "telerob arm");
+    auto dummy_robot = std::make_shared<robot_dart::Robot>("res/models/schunk_with_pg70.urdf", packages, "schunk lwa4d arm");
+    // auto dummy_robot = std::make_shared<robot_dart::Robot>("res/models/schunk_with_fetch.urdf", packages, "schunk lwa4d arm");
 
     // simu.add_floor(10., 0.2);
 
