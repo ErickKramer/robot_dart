@@ -214,19 +214,22 @@ int main(){
     robot_dart::RobotDARTSimu simu(timestep);
     
     // Specify meshes packages
-    std::vector<std::pair<std::string, std::string>> packages = {{"schunk", std::string(RESPATH) + "/models/meshes/lwa4d"}};
+    std::vector<std::pair<std::string, std::string>> packages = {{"lwa4d", std::string(RESPATH) + "/models/meshes/lwa4d"}};
 
     // Create a robot from URDF specifying where the stl files are located
     // auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/arm_schunk_without_collisions.urdf", packages);
     auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/arm_schunk_with_collisions.urdf", packages, "schunk lwa4d");
+    // auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/arm_schunk_with_pg70.urdf", packages, "schunk lwa4d");
     
     // Pin the arm to the workd 
     arm_robot->fix_to_world();
     arm_robot->set_position_enforced(true);
 
-
+    // Get DOFs of the robot
+    double numDOFs = arm_robot->skeleton()->getNumDofs();
     // Set of desired initial configuration
-    std::vector<double> ctrl = {0., 0., 0., 0., 0., 0., 0.};
+    std::vector<double> ctrl(numDOFs, 0.0);
+    // std::vector<double> ctrl = {0., 0., 0., 0., 0., 0., 0.};
 
     // Add a PD-controller to the arm 
     arm_robot->add_controller(std::make_shared<robot_dart::control::PDControl>(ctrl));
@@ -238,9 +241,9 @@ int main(){
     // Eigen::VectorXd velocities_limit = 
     //     Eigen::VectorXd::Zero(arm_robot->skeleton()->getNumDofs()) + 0.5;
     Eigen::VectorXd acc_upper_limit = 
-        Eigen::VectorXd::Ones(arm_robot->skeleton()->getNumDofs())*0.01;
+        Eigen::VectorXd::Ones(numDOFs)*0.01;
     Eigen::VectorXd acc_lower_limit = 
-        Eigen::VectorXd::Ones(arm_robot->skeleton()->getNumDofs())*-0.01;
+        Eigen::VectorXd::Ones(numDOFs)*-0.01;
     // arm_robot->skeleton()->setInitialVelocities(initial_velocities);
     // arm_robot->skeleton()->setVelocityUpperLimits(velocities_limit);
     // arm_robot->skeleton()->setVelocityLowerLimits(velocities_limit);
@@ -256,7 +259,7 @@ int main(){
         // Specify the graphics for the simulator
         // Pass the world, resolution (widht, height)
         
-        simu.set_graphics(std::make_shared<robot_dart::graphics::Graphics>(simu.world(), 1920,1080));
+        simu.set_graphics(std::make_shared<robot_dart::graphics::Graphics>(simu.world(), 1920,1080, true, false));
         // Set camera position (0,3,1) looking at the center (0,0,0)
         std::static_pointer_cast<robot_dart::graphics::Graphics>(simu.graphics())->
             look_at({0., 5., 1}, {0., 0., 0.});
@@ -295,7 +298,8 @@ int main(){
     std::cout<<"-----------------------------------"<<std::endl;
 
     std::cout<<"Moving second joint pi/2 radians"<<std::endl;
-    ctrl = {0., M_PI_2, 0., 0., 0., 0., 0.};
+    // ctrl = {0., M_PI_2, 0., 0., 0., 0., 0.};
+    ctrl[1] = M_PI_2;
     arm_robot->controllers()[0]->set_parameters(ctrl);
     simu.run(simulation_time);
     display_run_results(simu, timestep);
@@ -310,7 +314,8 @@ int main(){
     std::cout<<"-----------------------------------"<<std::endl;
 
     std::cout<<"Moving second joint -pi/2 radians"<<std::endl;
-    ctrl = {0., -M_PI_2, 0., 0., 0., 0., 0.};
+    // ctrl = {0., -M_PI_2, 0., 0., 0., 0., 0.};
+    ctrl[1] = -M_PI_2;
     arm_robot->controllers()[0]->set_parameters(ctrl);
     simu.run(simulation_time);
     display_run_results(simu, timestep);
