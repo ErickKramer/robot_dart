@@ -22,7 +22,7 @@ Eigen::VectorXd compute_pose(Eigen::Isometry3d link_transform);
 
 
 struct JointStateDesc : public robot_dart::descriptor::BaseDescriptor{
-    // Descriptor used to log the joints states
+    // Descriptor used to record the joints states
     JointStateDesc(robot_dart::RobotDARTSimu& simu, size_t desc_dump = 1) : 
         robot_dart::descriptor::BaseDescriptor(simu, desc_dump) {}
 
@@ -39,7 +39,7 @@ struct JointStateDesc : public robot_dart::descriptor::BaseDescriptor{
 };
 
 struct PoseStateDesc : public robot_dart::descriptor::BaseDescriptor{
-    // Descriptor used to log the end_effector pose states 
+    // Descriptor used to record the end_effector pose states 
     PoseStateDesc(robot_dart::RobotDARTSimu& simu, size_t desc_dump = 1) : 
         robot_dart::descriptor::BaseDescriptor(simu, desc_dump) {}
     
@@ -59,14 +59,14 @@ struct PoseStateDesc : public robot_dart::descriptor::BaseDescriptor{
 };
 
 struct JointVelDesc : public robot_dart::descriptor::BaseDescriptor{
-    // Descriptor used to log the joints states
+    // Descriptor used to record the joints velocities 
     JointVelDesc(robot_dart::RobotDARTSimu& simu, size_t desc_dump = 1) : 
         robot_dart::descriptor::BaseDescriptor(simu, desc_dump) {}
 
     void operator()(){
         // Stores the joint positions
         if (_simu.robots().size() > 0){
-            // Add current joints configuration to the joints_states vector
+            // Add current joints configuration to the joints_velocities vector
             joints_velocities.push_back(_simu.robots()[0]->skeleton()->getVelocities());
             
         }
@@ -112,7 +112,7 @@ double movement_duration(std::vector<Eigen::VectorXd> velocities, double timeste
 
 }
 
-
+// NOTE: REFACTOR
 // void display_link_info(Eigen::Isometry3d link_transform){
 
 //     /*
@@ -169,6 +169,11 @@ double movement_duration(std::vector<Eigen::VectorXd> velocities, double timeste
 // }
 
 void display_run_results(robot_dart::RobotDARTSimu simu, double timestep){
+    /*  Displays information relevant of the ran simulation 
+        Args:
+        - simu:
+        - timestep: resolution of the simulation
+    */
     // std::cout << "Pose" << compute_pose(frame_transform).transpose() << std::endl;
     std::cout << "Number of joints_states recorded " << 
         std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.size() << std::endl;
@@ -191,7 +196,13 @@ void display_run_results(robot_dart::RobotDARTSimu simu, double timestep){
 }
 
 void backup(const std::vector<Eigen::VectorXd> v, std::string file_type, std::string file_name){
-
+    /*
+    Stores an Eigen vector into a file. 
+    Args:
+        - v: Vector desired to store
+        - file_type: Type of file desired
+        - file_name: Name desired for the file
+    */
 
     if (file_type == "text"){
         std::ofstream outFile(file_name);
@@ -207,12 +218,15 @@ int main(){
 
     // ---------------- URDF ---------------------
     // Specify meshes packages
-    std::vector<std::pair<std::string, std::string>> packages = {{"lwa4d", std::string(RESPATH) + "/models/meshes/lwa4d"}};
+    std::vector<std::pair<std::string, std::string>> packages = {{"lwa4d", 
+        std::string(RESPATH) + "/models/meshes/lwa4d"}};
+    // std::vector<std::pair<std::string, std::string>> packages = {{"iiwa14", 
+    //     std::string(RESPATH) + "/models/meshes/iiwa14"}};
     
-    // Create a robot from URDF specifying where the stl files are located
-    // auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/arm_schunk_without_collisions.urdf", packages);
-    auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/arm_schunk_with_collisions.urdf", packages, "schunk lwa4d");
-    // auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/arm_schunk_with_pg70.urdf", packages, "schunk lwa4d");
+    // Load URDF 
+    // auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/arm_schunk_with_collisions.urdf", packages, "schunk lwa4d");
+    auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/schunk_with_pg70.urdf", packages, "schunk lwa4d with PG70 gripper");
+    // auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/iiwa14.urdf", packages, "iiwa14 arm");
     
     // ---------------- Simulator ---------------------
     // Create robot_dart simulator
@@ -222,7 +236,7 @@ int main(){
     // Setting timestep  
     robot_dart::RobotDARTSimu simu(timestep);
     
-    // Pin the arm to the workd 
+    // Pin the arm to the world 
     arm_robot->fix_to_world();
     arm_robot->set_position_enforced(true);
 
@@ -242,12 +256,16 @@ int main(){
     // Set of desired initial configuration
     std::vector<double> ctrl(numDOFs, 0.0);
     // std::vector<double> ctrl = {0., 0., 0., 0., 0., 0., 0.};
+    std::cout << "Initial joint angles requested" << std::endl;
+    for (auto c : ctrl) std::cout << c << " ";
+    std::cout << std::endl;
 
     // Add a PD-controller to the arm 
     arm_robot->add_controller(std::make_shared<robot_dart::control::PDControl>(ctrl));
-    
+
     // Set PD gains
     std::static_pointer_cast<robot_dart::control::PDControl>(arm_robot->controllers()[0])
+    //   ->set_pd(300., 50.);
       ->set_pd(30., 10.);
     
     // Set Accelaration limits
@@ -292,6 +310,13 @@ int main(){
 
     // Specify joint angle
     ctrl[1] = M_PI_2;
+    ctrl[8] = 1;
+    // ctrl[3] = M_PI_2;
+    // ctrl[4] = M_PI_2;
+    // ctrl[5] = M_PI_2;
+    std::cout << "Joint angles requested" << std::endl;
+    for (auto c : ctrl) std::cout << c << " ";
+    std::cout << std::endl;
 
     // Set controller 
     arm_robot->controllers()[0]->set_parameters(ctrl);
@@ -309,24 +334,29 @@ int main(){
     std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states.clear();
     std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities.clear();
     
-    std::cout<<"-----------------------------------"<<std::endl;
+    // std::cout<<"-----------------------------------"<<std::endl;
 
-    std::cout<<"Moving second joint -pi/2 radians"<<std::endl;
+    // std::cout<<"Moving second joint -pi/2 radians"<<std::endl;
 
-    // Specify joint angle
-    ctrl[1] = -M_PI_2;
+    // // Specify joint angle
+    // ctrl[1] = -M_PI_2;
+    // ctrl[3] = -M_PI_2;
+    // ctrl[5] = -M_PI_2;
+    // std::cout << "Joint angles requested" << std::endl;
+    // for (auto c : ctrl) std::cout << c << " ";
+    // std::cout << std::endl;
 
-    // Set controller
-    arm_robot->controllers()[0]->set_parameters(ctrl);
+    // // Set controller
+    // arm_robot->controllers()[0]->set_parameters(ctrl);
 
-    // Run simulation
-    simu.run(simulation_time);
-    display_run_results(simu, timestep);
+    // // Run simulation
+    // simu.run(simulation_time);
+    // display_run_results(simu, timestep);
    
-    // Reset States vector
-    std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
-    std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states.clear();
-    std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities.clear();
+    // // Reset States vector
+    // std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
+    // std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states.clear();
+    // std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities.clear();
     
     arm_robot.reset();
     return 0; 
