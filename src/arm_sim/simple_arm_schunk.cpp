@@ -204,29 +204,41 @@ void backup(const std::vector<Eigen::VectorXd> v, std::string file_type, std::st
 
 
 int main(){
-    // Create robot_dart simulator
-    std::srand(std::time(NULL));
 
-    double timestep = 0.0001;
-    double simulation_time = 10.;
-    
-    // Setting timestep of 0.001 seconds 
-    robot_dart::RobotDARTSimu simu(timestep);
-    
+    // ---------------- URDF ---------------------
     // Specify meshes packages
     std::vector<std::pair<std::string, std::string>> packages = {{"lwa4d", std::string(RESPATH) + "/models/meshes/lwa4d"}};
-
+    
     // Create a robot from URDF specifying where the stl files are located
     // auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/arm_schunk_without_collisions.urdf", packages);
     auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/arm_schunk_with_collisions.urdf", packages, "schunk lwa4d");
     // auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/arm_schunk_with_pg70.urdf", packages, "schunk lwa4d");
     
+    // ---------------- Simulator ---------------------
+    // Create robot_dart simulator
+    std::srand(std::time(NULL));
+    double timestep = 0.0001;
+    double simulation_time = 10.;
+    // Setting timestep  
+    robot_dart::RobotDARTSimu simu(timestep);
+    
     // Pin the arm to the workd 
     arm_robot->fix_to_world();
     arm_robot->set_position_enforced(true);
 
+    #ifdef GRAPHIC
+        // Specify the graphics for the simulator
+        // Pass the world, resolution (widht, height)
+        simu.set_graphics(std::make_shared<robot_dart::graphics::Graphics>(simu.world(), 1920,1080, true, false));
+        
+        // Set camera position looking at the center 
+        std::static_pointer_cast<robot_dart::graphics::Graphics>(simu.graphics())->
+            look_at({0., 5., 1}, {0., 0., 0.});
+    #endif
+
     // Get DOFs of the robot
     double numDOFs = arm_robot->skeleton()->getNumDofs();
+
     // Set of desired initial configuration
     std::vector<double> ctrl(numDOFs, 0.0);
     // std::vector<double> ctrl = {0., 0., 0., 0., 0., 0., 0.};
@@ -237,37 +249,17 @@ int main(){
     // Set PD gains
     std::static_pointer_cast<robot_dart::control::PDControl>(arm_robot->controllers()[0])
       ->set_pd(30., 10.);
-    //set_pd(10., 1.);
-    // Eigen::VectorXd velocities_limit = 
-    //     Eigen::VectorXd::Zero(arm_robot->skeleton()->getNumDofs()) + 0.5;
-    Eigen::VectorXd acc_upper_limit = 
-        Eigen::VectorXd::Ones(numDOFs)*0.01;
-    Eigen::VectorXd acc_lower_limit = 
-        Eigen::VectorXd::Ones(numDOFs)*-0.01;
-    // arm_robot->skeleton()->setInitialVelocities(initial_velocities);
-    // arm_robot->skeleton()->setVelocityUpperLimits(velocities_limit);
-    // arm_robot->skeleton()->setVelocityLowerLimits(velocities_limit);
+    
+    // Set Accelaration limits
+    Eigen::VectorXd acc_upper_limit = Eigen::VectorXd::Ones(numDOFs)*0.01;
+    Eigen::VectorXd acc_lower_limit = Eigen::VectorXd::Ones(numDOFs)*-0.01;
     arm_robot->skeleton()->setAccelerationUpperLimits(acc_upper_limit);
     arm_robot->skeleton()->setAccelerationLowerLimits(acc_lower_limit);
-   
    
     // Specify collision detection
     simu.world()->getConstraintSolver()->
         setCollisionDetector(dart::collision::FCLCollisionDetector::create());
-
-    #ifdef GRAPHIC
-        // Specify the graphics for the simulator
-        // Pass the world, resolution (widht, height)
-        
-        simu.set_graphics(std::make_shared<robot_dart::graphics::Graphics>(simu.world(), 1920,1080, true, false));
-        // Set camera position (0,3,1) looking at the center (0,0,0)
-        std::static_pointer_cast<robot_dart::graphics::Graphics>(simu.graphics())->
-            look_at({0., 5., 1}, {0., 0., 0.});
-    #endif 
-
-    // Draw a floor with a square size of 10 meters and 0.2 meters of height  
-    // simu.add_floor(10., 0.2);
-
+   
     // Add robot to the simulator
     simu.add_robot(arm_robot);
 
@@ -278,14 +270,14 @@ int main(){
 
     // Display arm information    
     std::cout << "Arm: " << arm_robot->name() << std::endl;
-    std::cout << "Number of DoF: " << arm_robot->skeleton()->getNumDofs() << std::endl;
+    std::cout << "Number of DoF: " << numDOFs << std::endl;
     std::cout << "Acceleration lower " << arm_robot -> skeleton() -> getAccelerationLowerLimits().transpose() << std::endl;
     std::cout << "Acceleration higher " << arm_robot -> skeleton() -> getAccelerationUpperLimits().transpose() << std::endl;
     std::cout << "Velocity lower " << arm_robot -> skeleton() -> getVelocityLowerLimits().transpose() << std::endl;
     std::cout << "Velocity higher " << arm_robot -> skeleton() -> getVelocityUpperLimits().transpose() << std::endl;
     std::cout<<"-----------------------------------"<<std::endl;
     
-    // Run the simulator for seconds 
+    // Run simulation 
     simu.run(simulation_time);
     display_run_results(simu, timestep);
 
@@ -294,15 +286,21 @@ int main(){
     std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states.clear();
     std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities.clear();
     
-
     std::cout<<"-----------------------------------"<<std::endl;
 
     std::cout<<"Moving second joint pi/2 radians"<<std::endl;
-    // ctrl = {0., M_PI_2, 0., 0., 0., 0., 0.};
+
+    // Specify joint angle
     ctrl[1] = M_PI_2;
+
+    // Set controller 
     arm_robot->controllers()[0]->set_parameters(ctrl);
+
+    // Run simulation
     simu.run(simulation_time);
     display_run_results(simu, timestep);
+    
+    // Create a velocities log file to analyze the top velocity of the movement
     std::vector<Eigen::VectorXd> velocities = std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities;
     backup(velocities, "text", "velocities.txt");
     
@@ -314,9 +312,14 @@ int main(){
     std::cout<<"-----------------------------------"<<std::endl;
 
     std::cout<<"Moving second joint -pi/2 radians"<<std::endl;
-    // ctrl = {0., -M_PI_2, 0., 0., 0., 0., 0.};
+
+    // Specify joint angle
     ctrl[1] = -M_PI_2;
+
+    // Set controller
     arm_robot->controllers()[0]->set_parameters(ctrl);
+
+    // Run simulation
     simu.run(simulation_time);
     display_run_results(simu, timestep);
    
