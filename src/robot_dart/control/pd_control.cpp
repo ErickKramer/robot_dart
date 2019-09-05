@@ -25,10 +25,17 @@ namespace robot_dart {
             Eigen::VectorXd q = get_positions();
             Eigen::VectorXd dq = get_velocities();
 
+            // Integrate position forward by one timestep
+            // q += dq * robot->skeleton()->getTimeStep();
+
+            // Get mass matrix 
+            // const Eigen::MatrixXd& mass = robot->skeleton()->getMassMatrix();
+
             /// Compute the simplest PD controller output:
             /// P gain * (target position - current position) + D gain * (0 - current velocity)
             Eigen::VectorXd commands = _Kp.array() * (target_positions.array() - q.array()) - _Kd.array() * dq.array();
-
+            // std::cout << commands.transpose() << std::endl;
+            // std::cout << "----" << std::endl;
             return commands;
         }
 
