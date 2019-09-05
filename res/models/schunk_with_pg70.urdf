@@ -56,9 +56,9 @@
       </material>
     </visual>
     <collision>
-      <origin rpy="0 0 0" xyz="-0.0215 0.0 -0.01"/>
+      <origin rpy="0 1.57 0" xyz="0 0 0"/>
       <geometry>
-        <box size="0.043 0.6 0.21"/>
+        <box size="0.02 0.6 0.6"/>
       </geometry>
     </collision>
   </link>
@@ -334,7 +334,7 @@
   </joint>
   <link name="pg70_podest_link">
     <inertial>
-      <mass value="0.01"/>
+      <mass value="0.000001"/>
       <origin xyz="0 0 0"/>
       <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
     </inertial>
@@ -359,8 +359,8 @@
   <link name="pg70_palm_link">
     <inertial>
       <origin rpy="0 0 0" xyz="0 0 0"/>
-      <mass value="1"/>
-      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+      <mass value="0.000001"/>
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
     </inertial>
     <visual>
       <geometry>
@@ -374,23 +374,21 @@
     </collision>
   </link>
   <joint name="pg70_finger_left_joint" type="prismatic">
-    <!--origin rpy="0 0 0" xyz="0 0.035 0.0789"/-->
     <origin rpy="0 0 0" xyz="0 -0.015425 0.0789"/>
     <parent link="pg70_palm_link"/>
     <child link="pg70_finger_left_link"/>
-    <!--axis xyz="0 1 0"/-->
     <axis xyz="0 1 0"/>
     <limit effort="10" lower="-0.001" upper="0.061" velocity="2.0"/>
   </joint>
   <link name="pg70_finger_left_link">
     <inertial>
       <origin rpy="0 0 0" xyz="-0.01 0 0"/>
-      <mass value="1"/>
-      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+      <mass value="0.000001"/>
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
     </inertial>
     <visual>
       <geometry>
-        <box size="0.03 0.01 0.1"/>
+        <box size="0.04 0.01 0.1"/>
       </geometry>
       <material name="red">
         <color rgba="1 0 0 1"/>
@@ -398,7 +396,7 @@
     </visual>
     <collision>
       <geometry>
-        <box size="0.03 0.01 0.1"/>
+        <box size="0.04 0.01 0.1"/>
       </geometry>
       <material name="red">
         <color rgba="1 0 0 1"/>
@@ -406,23 +404,22 @@
     </collision>
   </link>
   <joint name="pg70_finger_right_joint" type="prismatic">
-    <!--origin rpy="-0 0 0" xyz="0 -0.035 0.0789"/-->
     <origin rpy="0 0 0" xyz="0 0.015425 0.0789"/>
     <parent link="pg70_palm_link"/>
     <child link="pg70_finger_right_link"/>
     <axis xyz="0 -1 0"/>
-    <mimic joint="pg70_finger_left_joint" multiplier="1" offset="0"/>
+    <!--mimic joint="pg70_finger_left_joint" multiplier="1" offset="0"/-->
     <limit effort="10" lower="-0.001" upper="0.061" velocity="2.0"/>
   </joint>
   <link name="pg70_finger_right_link">
     <inertial>
       <origin rpy="0 0 0" xyz="0 0 0"/>
-      <mass value="1"/>
-      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+      <mass value="0.000001"/>
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
     </inertial>
     <visual>
       <geometry>
-        <box size="0.03 0.01 0.1"/>
+        <box size="0.04 0.01 0.1"/>
       </geometry>
       <material name="red">
         <color rgba="1 0 0 1"/>
@@ -430,7 +427,7 @@
     </visual>
     <collision>
       <geometry>
-        <box size="0.03 0.01 0.1"/>
+        <box size="0.04 0.01 0.1"/>
       </geometry>
       <material name="red">
         <color rgba="1 0 0 1"/>
