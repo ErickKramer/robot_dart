@@ -52,7 +52,7 @@ namespace robot_dart {
                     _osg_viewer->realize();
                 }
 
-                // process next framerefresh
+                // process next frame refresh
                 if (_frame_counter % _render_period == 0)
                     _osg_viewer->frame();
                 _frame_counter++;
