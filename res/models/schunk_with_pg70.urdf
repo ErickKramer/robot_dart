@@ -69,6 +69,7 @@
     <child link="right_arm_podest_link"/>
   </joint>
   <link name="right_arm_podest_link">
+  <!-- Default Mass and Inertia-->
     <inertial>
       <mass value="0.01"/>
       <origin xyz="0 0 0"/>
@@ -92,6 +93,7 @@
     <child link="right_arm_base_link"/>
   </joint>
   <link name="right_arm_base_link">
+  <!--Default Mass and Inertia -->
     <inertial>
       <mass value="0.01"/>
       <origin xyz="0 0 0"/>
@@ -104,13 +106,13 @@
     <parent link="right_arm_base_link"/>
     <child link="right_arm_1_link"/>
     <axis xyz="0 0 -1"/>
-    <limit effort="2160" lower="-3.12159265359" upper="3.12159265359" velocity="0.43633"/>
+    <limit effort="216" lower="-3.12159265359" upper="3.12159265359" velocity="0.43633"/>
   </joint>
   <link name="right_arm_1_link">
     <inertial>
-      <mass value="0.01"/>
+      <mass value="3.6"/>
       <origin xyz="0 0 0"/>
-      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+      <inertia ixx="0.010" ixy="0.0" ixz="0.0" iyy="0.010" iyz="0.0" izz="0.001"/>
     </inertial>
     <!--
       <xacro:cylinder_inertial radius="0.06" length="0.150" mass="3.6">
@@ -135,19 +137,14 @@
     <parent link="right_arm_1_link"/>
     <child link="right_arm_2_link"/>
     <axis xyz="0 0 -1"/>
-    <limit effort="2160" lower="-2.12" upper="2.12" velocity="0.43633"/>
+    <limit effort="216" lower="-2.12" upper="2.12" velocity="0.43633"/>
   </joint>
   <link name="right_arm_2_link">
     <inertial>
-      <mass value="0.01"/>
+      <mass value="2.0"/>
       <origin xyz="0 0 0"/>
-      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+      <inertia ixx="0.006" ixy="0.0" ixz="0.0" iyy="0.006" iyz="0.0" izz="0.001"/>
     </inertial>
-    <!--
-      <xacro:cylinder_inertial radius="0.06" length="0.150" mass="2.0">
-        <origin xyz="0 0 0" rpy="0 0 0"/>
-      </xacro:cylinder_inertial>
--->
     <visual>
       <geometry>
         <mesh filename="package://lwa4d/arm_2_link.stl"/>
@@ -166,19 +163,14 @@
     <parent link="right_arm_2_link"/>
     <child link="right_arm_3_link"/>
     <axis xyz="0 0 -1"/>
-    <limit effort="815" lower="-3.12159265359" upper="3.12159265359" velocity="0.4189"/>
+    <limit effort="81.5" lower="-3.12159265359" upper="3.12159265359" velocity="0.4189"/>
   </joint>
   <link name="right_arm_3_link">
     <inertial>
-      <mass value="0.01"/>
+      <mass value="2.0"/>
       <origin xyz="0 0 0"/>
-      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+      <inertia ixx="0.008" ixy="0.0" ixz="0.0" iyy="0.008" iyz="0.0" izz="0.001"/>
     </inertial>
-    <!--
-      <xacro:cylinder_inertial radius="0.06" length="0.2" mass="2.0">
-        <origin xyz="0.0 0 -0.2" rpy="0 0 0"/>
-      </xacro:cylinder_inertial>
--->
     <visual>
       <geometry>
         <mesh filename="package://lwa4d/arm_3_link.stl"/>
@@ -197,19 +189,14 @@
     <parent link="right_arm_3_link"/>
     <child link="right_arm_4_link"/>
     <axis xyz="0 0 -1"/>
-    <limit effort="815" lower="-2.16" upper="2.16" velocity="0.4189"/>
+    <limit effort="81.5" lower="-2.16" upper="2.16" velocity="0.4189"/>
   </joint>
   <link name="right_arm_4_link">
     <inertial>
-      <mass value="0.01"/>
+      <mass value="1.2"/>
       <origin xyz="0 0 0"/>
-      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+      <inertia ixx="0.003" ixy="0.0" ixz="0.0" iyy="0.003" iyz="0.0" izz="0.0004"/>
     </inertial>
-    <!--
-      <xacro:cylinder_inertial radius="0.06" length="0.150" mass="1.2">
-        <origin xyz="0 0 0" rpy="0 0 0"/>
-      </xacro:cylinder_inertial>
--->
     <visual>
       <geometry>
         <mesh filename="package://lwa4d/arm_4_link.stl"/>
@@ -228,19 +215,14 @@
     <parent link="right_arm_4_link"/>
     <child link="right_arm_5_link"/>
     <axis xyz="0 0 -1"/>
-    <limit effort="207" lower="-3.12159265359" upper="3.12159265359" velocity="0.43633"/>
+    <limit effort="20.7" lower="-3.12159265359" upper="3.12159265359" velocity="0.43633"/>
   </joint>
   <link name="right_arm_5_link">
     <inertial>
-      <mass value="0.01"/>
-      <origin xyz="0 0 0"/>
-      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+      <mass value="1.2"/>
+      <origin xyz="0 0 -0.18"/>
+      <inertia ixx="0.003" ixy="0.0" ixz="0.0" iyy="0.003" iyz="0.0" izz="0.0004"/>
     </inertial>
-    <!--
-      <xacro:cylinder_inertial radius="0.06" length="0.15" mass="1.2">
-        <origin xyz="0 0 -0.18" rpy="0 0 0"/>
-      </xacro:cylinder_inertial>
--->
     <visual>
       <geometry>
         <mesh filename="package://lwa4d/arm_5_link.stl"/>
@@ -259,19 +241,14 @@
     <parent link="right_arm_5_link"/>
     <child link="right_arm_6_link"/>
     <axis xyz="0 0 1"/>
-    <limit effort="150" lower="-2.07" upper="2.07" velocity="1.2566"/>
+    <limit effort="15" lower="-2.07" upper="2.07" velocity="1.2566"/>
   </joint>
   <link name="right_arm_6_link">
     <inertial>
-      <mass value="0.01"/>
+      <mass value="1.9"/>
       <origin xyz="0 0 0"/>
-      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+      <inertia ixx="0.002" ixy="0.0" ixz="0.0" iyy="0.002" iyz="0.0" izz="0.002"/>
     </inertial>
-    <!--
-      <xacro:sphere_inertial radius="0.05" mass="1.9">
-        <origin xyz="0 0 0" rpy="0 0 0"/>
-      </xacro:sphere_inertial>
--->
     <visual>
       <geometry>
         <mesh filename="package://lwa4d/arm_6_link.stl"/>
@@ -290,19 +267,14 @@
     <parent link="right_arm_6_link"/>
     <child link="right_arm_7_link"/>
     <axis xyz="0 0 1"/>
-    <limit effort="150" lower="-2.94" upper="2.94" velocity="1.2566"/>
+    <limit effort="15" lower="-2.94" upper="2.94" velocity="1.2566"/>
   </joint>
   <link name="right_arm_7_link">
     <inertial>
-      <mass value="0.01"/>
-      <origin xyz="0 0 0"/>
-      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+      <mass value="0.05"/>
+      <origin xyz="0 0 0.06"/>
+      <inertia ixx="0.00002" ixy="0.0" ixz="0.0" iyy="0.00002" iyz="0.0" izz="0.000004"/>
     </inertial>
-    <!--
-      <xacro:cylinder_inertial radius="0.03" length="0.035" mass="0.05">
-        <origin xyz="0 0 0.06" rpy="0 0 0"/>
-      </xacro:cylinder_inertial>
--->
     <visual>
       <geometry>
         <mesh filename="package://lwa4d/arm_7_link.stl"/>
@@ -316,7 +288,7 @@
     </collision>
   </link>
   <joint name="right_arm_ee_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="0 0 0.0824"/>
+    <origin rpy="0 0 0.0824" xyz="0 0 0.0824"/>
     <parent link="right_arm_7_link"/>
     <child link="right_arm_ee_link"/>
   </joint>
