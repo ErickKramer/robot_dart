@@ -34,6 +34,13 @@ namespace robot_dart {
             /// Compute the simplest PD controller output:
             /// P gain * (target position - current position) + D gain * (0 - current velocity)
             Eigen::VectorXd commands = _Kp.array() * (target_positions.array() - q.array()) - _Kd.array() * dq.array();
+            // std::cout << "Target Positions " << std::endl;
+            // std::cout << target_positions.transpose() << std::endl;
+            // std::cout << "Current Positions " << std::endl;
+            // std::cout << q.transpose() << std::endl;
+            // std::cout << "Current Vel " << std::endl;
+            // std::cout << dq.transpose() << std::endl;
+            // std::cout << "Commands " << std::endl;
             // std::cout << commands.transpose() << std::endl;
             // std::cout << "----" << std::endl;
             return commands;
