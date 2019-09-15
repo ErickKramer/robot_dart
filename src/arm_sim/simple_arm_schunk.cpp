@@ -9,6 +9,9 @@
 
 #include <fstream>
 #include <iterator>
+#include <chrono>
+#include <unistd.h>
+
 // #include <Eigen/Dense>
 // #include <Eigen/Geometry>
 
@@ -108,7 +111,7 @@ double movement_duration(std::vector<Eigen::VectorXd> velocities, double timeste
         index++;
     }
 
-    return velocities.size();
+    return velocities.size()*timestep;
 
 }
 
@@ -284,9 +287,22 @@ int main(){
     for (auto c : ctrl) std::cout << c << " ";
     std::cout << std::endl;
     
+    auto start = std::chrono::steady_clock::now();
+    
     // Run simulation
     simu.run(simulation_time);
+
+    auto end = std::chrono::steady_clock::now();
+
     display_run_results(simu, timestep);
+    
+    std::cout << "Simulation ran for " << 
+        std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() 
+            << " ms " <<std::endl;
+
+    std::cout << "Simulation ran for " << 
+        std::chrono::duration_cast<std::chrono::seconds>(end - start).count() 
+            << " sec " <<std::endl;
 
     // Reset States vector
     std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
