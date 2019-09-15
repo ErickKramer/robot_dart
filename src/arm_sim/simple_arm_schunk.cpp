@@ -160,6 +160,9 @@ void backup(const std::vector<Eigen::VectorXd> v, std::string file_type, std::st
 
 int main(){
 
+    std::string system = "Home";
+    // std::string system = "FKIE";
+
     // ---------------- URDF ---------------------
     // Specify meshes packages
     std::vector<std::pair<std::string, std::string>> packages = {{"lwa4d",
@@ -187,8 +190,19 @@ int main(){
     #ifdef GRAPHIC
         // Specify the graphics for the simulator
         // Pass the world, resolution (widht, height)
-        // Resolution screen at work (1920,1200); Resolution Asus 1920 1080
-        simu.set_graphics(std::make_shared<robot_dart::graphics::Graphics>(simu.world(), 1920,1200, true, true));
+        if (system.compare("Home")){
+            // Resolution screen of personal Asus
+            simu.set_graphics(std::make_shared<robot_dart::graphics::Graphics>(simu.world(), 1920,1080, true, true));
+
+        }
+        else if(system.compare("FKIE")){
+            // Resolution screen at work 
+            simu.set_graphics(std::make_shared<robot_dart::graphics::Graphics>(simu.world(), 1920,1200, true, true));
+        }
+        else{
+            // Generic resolution
+            simu.set_graphics(std::make_shared<robot_dart::graphics::Graphics>(simu.world()));
+        }
 
         // Set camera position looking at the center
         std::static_pointer_cast<robot_dart::graphics::Graphics>(simu.graphics())->
