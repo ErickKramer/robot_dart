@@ -22,21 +22,22 @@ namespace robot_dart {
             auto robot = _robot.lock();
             Eigen::VectorXd target_positions = Eigen::VectorXd::Map(_ctrl.data(), _ctrl.size());
 
-            Eigen::VectorXd q = get_positions();
-            Eigen::VectorXd dq = get_velocities();
+            Eigen::VectorXd current_positions = get_positions();
+            auto time_step = robot->skeleton()->getTimeStep();
+            // Eigen::VectorXd dq = get_velocities();
 
             // Calculate error
-            Eigen::VectorXd error = target_positions.array() - q.array();
+            Eigen::VectorXd error = target_positions.array() - current_positions.array();
 
             // Compute proportional term
             Eigen::VectorXd Pout = _Kp.array() * error.array();
 
             // Compute Integral term
-            _integral = _integral.array() + error.array() * robot->skeleton()->getTimeStep(); 
+            _integral = _integral.array() + error.array() * time_step; 
             Eigen::VectorXd Iout = _Ki.array() * _integral.array();
 
             // Compute Derivative term 
-            Eigen::VectorXd derivative = (error.array() - _pre_error.array()) / robot->skeleton()->getTimeStep();
+            Eigen::VectorXd derivative = (error.array() - _pre_error.array()) / time_step;
             Eigen::VectorXd Dout = _Kd.array() * derivative.array();
 
             // Update previous error
