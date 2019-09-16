@@ -1,7 +1,8 @@
 #include <iostream>
 #include <algorithm>
 #include <cstdlib>
-#include <robot_dart/control/pd_control.hpp>
+// #include <robot_dart/control/pd_control.hpp>
+#include <robot_dart/control/pid_control.hpp>
 #include <robot_dart/robot_dart_simu.hpp>
 
 #include <dart/collision/fcl/FCLCollisionDetector.hpp>
@@ -225,7 +226,10 @@ int main(){
     // std::vector<double> ctrl = {0., 0., 0., 0., 0., 0., 0.};
 
     // Add a PD-controller to the arm
-    arm_robot->add_controller(std::make_shared<robot_dart::control::PDControl>(ctrl));
+    // arm_robot->add_controller(std::make_shared<robot_dart::control::PDControl>(ctrl));
+    
+    // Add a PID Controller for the arm  
+    arm_robot->add_controller(std::make_shared<robot_dart::control::PIDControl>(ctrl));
     
     // Computes Kp Vector
     Eigen::VectorXd Kp(9); 
@@ -239,10 +243,21 @@ int main(){
     Kp[7] = 100.; // Joint finger left
     Kp[8] = 100.; // Joint finger right
 
+    Eigen::VectorXd Ki(9); 
+    Ki[0] = 1.; // Joint between arm_base_link and arm_1_link
+    Ki[1] = 1.; // Joint between arm_1_link and arm_2_link
+    Ki[2] = 1.; // Joint between arm_2_link and arm_3_link
+    Ki[3] = 1.; // Joint between arm_3_link and arm_4_link
+    Ki[4] = 1.; // Joint between arm_4_link and arm_5_link
+    Ki[5] = 1.; // Joint between arm_5_link and arm_6_link
+    Ki[6] = 1.; // Joint between arm_6_link and arm_7_link
+    Ki[7] = 1.; // Joint finger left
+    Ki[8] = 1.; // Joint finger right
+
     // Computes Kd Vector
     Eigen::VectorXd Kd(9); 
     Kd[0] = 1.;
-    Kd[1] = 2.;
+    Kd[1] = 5.;
     Kd[2] = 1.;
     Kd[3] = 1.;
     Kd[4] = 1.;
@@ -252,10 +267,13 @@ int main(){
     Kd[8] = 1.;
 
     // Set PD gains
-    std::static_pointer_cast<robot_dart::control::PDControl>(arm_robot->controllers()[0])
-    //   ->set_pd(300., 50.);
-      ->set_pd(Kp, Kd);
+    // std::static_pointer_cast<robot_dart::control::PDControl>(arm_robot->controllers()[0])
+    //   ->set_pd(Kp, Kd);
 
+    // Set PD gains
+    std::static_pointer_cast<robot_dart::control::PIDControl>(arm_robot->controllers()[0])
+      ->set_pid(Kp, Ki, Kd);
+    
     // Set Accelaration limits
     Eigen::VectorXd acc_upper_limit = Eigen::VectorXd::Ones(numDOFs)*0.01;
     Eigen::VectorXd acc_lower_limit = Eigen::VectorXd::Ones(numDOFs)*-0.01;
@@ -287,22 +305,22 @@ int main(){
     for (auto c : ctrl) std::cout << c << " ";
     std::cout << std::endl;
     
-    auto start = std::chrono::steady_clock::now();
+    // auto start = std::chrono::steady_clock::now();
     
     // Run simulation
     simu.run(simulation_time);
 
-    auto end = std::chrono::steady_clock::now();
+    // auto end = std::chrono::steady_clock::now();
 
     display_run_results(simu, timestep);
     
-    std::cout << "Simulation ran for " << 
-        std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() 
-            << " ms " <<std::endl;
+    // std::cout << "Simulation ran for " << 
+    //     std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() 
+    //         << " ms " <<std::endl;
 
-    std::cout << "Simulation ran for " << 
-        std::chrono::duration_cast<std::chrono::seconds>(end - start).count() 
-            << " sec " <<std::endl;
+    // std::cout << "Simulation ran for " << 
+    //     std::chrono::duration_cast<std::chrono::seconds>(end - start).count() 
+    //         << " sec " <<std::endl;
 
     // Reset States vector
     std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
