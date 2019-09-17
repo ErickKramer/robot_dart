@@ -244,9 +244,9 @@ int main(){
     Kp[8] = 100.; // Joint finger right
 
     Eigen::VectorXd Ki(9); 
-    Ki[0] = 1.; // Joint between arm_base_link and arm_1_link
-    Ki[1] = 1.; // Joint between arm_1_link and arm_2_link
-    Ki[2] = 1.; // Joint between arm_2_link and arm_3_link
+    Ki[0] = 0.; // Joint between arm_base_link and arm_1_link
+    Ki[1] = 0.; // Joint between arm_1_link and arm_2_link
+    Ki[2] = 0.; // Joint between arm_2_link and arm_3_link
     Ki[3] = 1.; // Joint between arm_3_link and arm_4_link
     Ki[4] = 1.; // Joint between arm_4_link and arm_5_link
     Ki[5] = 1.; // Joint between arm_5_link and arm_6_link
@@ -257,7 +257,7 @@ int main(){
     // Computes Kd Vector
     Eigen::VectorXd Kd(9); 
     Kd[0] = 1.;
-    Kd[1] = 5.;
+    Kd[1] = 40.;
     Kd[2] = 1.;
     Kd[3] = 1.;
     Kd[4] = 1.;
@@ -332,8 +332,8 @@ int main(){
     // std::cout<<"Moving second joint pi/2 radians"<<std::endl;
 
     // Specify joint angle
-    ctrl[6] = M_PI_2;
-    ctrl[1] = M_PI_2;
+    ctrl[0] = M_PI_2;
+    ctrl[2] = M_PI_2;
     // ctrl[8] = 1;
     // ctrl[8] = 1;
     // ctrl[3] = M_PI_2;
