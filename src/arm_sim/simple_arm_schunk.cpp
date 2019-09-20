@@ -116,22 +116,31 @@ double movement_duration(std::vector<Eigen::VectorXd> velocities, double timeste
 
 }
 
-void display_run_results(robot_dart::RobotDARTSimu simu, double timestep){
+void display_run_results(robot_dart::RobotDARTSimu simu, double timestep, std::vector<double>& ctrl ){
     /*  Displays information relevant of the ran simulation
         Args:
         - simu:
         - timestep: resolution of the simulation
     */
-    // std::cout << "Pose" << compute_pose(frame_transform).transpose() << std::endl;
     std::cout << "Number of joints_states recorded " <<
         std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.size() << std::endl;
-    std::cout << "Final joints configuration \n" << std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->
-        joints_states.back().transpose() << std::endl;
-
-    // Collectes recorded poses
     std::vector<Eigen::VectorXd> poses = std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states;
     std::cout << "Number of pose_states recorded " <<
         poses.size() << std::endl;
+    
+    Eigen::VectorXd target_positions = Eigen::VectorXd::Map(ctrl.data(), ctrl.size());
+    std::cout << "Joint angles requested " << target_positions.transpose() << std::endl;
+
+    Eigen::VectorXd end_configuration = std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->
+        joints_states.back(); 
+    
+    std::cout << "Final joints configuration \n" << end_configuration.transpose() << std::endl;
+    
+    // std::cout << "Final joints configuration \n" << std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->
+        // joints_states.back().transpose() << std::endl;
+
+    std::cout << "Error for the arm configuration \n" << (target_positions - end_configuration).transpose() << std::endl;
+
     std::cout << "Pose of the end effector \n " << poses.back().transpose() << std::endl;
 
     // Collecte recorded velocities
@@ -230,8 +239,21 @@ int main(){
     
     // Add a PID Controller for the arm  
     arm_robot->add_controller(std::make_shared<robot_dart::control::PIDControl>(ctrl));
-    
+
+    // PID_params
     // Computes Kp Vector
+    /*
+    Joints: 
+    - 0: Rolling : Set
+    - 1: Flexing : Set
+    - 2: Rolling : Set 
+    - 3: Flexing : Set
+    - 4: Rolling : Set 
+    - 5: Flexing : Set 
+    - 6: Rolling : Set 
+    - 7: Left finger : Not Set 
+    - 8: Right finger : Not Set 
+    */
     Eigen::VectorXd Kp(9); 
     Kp[0] = 1000.; // Joint between arm_base_link and arm_1_link
     Kp[1] = 1000.; // Joint between arm_1_link and arm_2_link
@@ -240,16 +262,16 @@ int main(){
     Kp[4] = 1000.; // Joint between arm_4_link and arm_5_link
     Kp[5] = 1000.; // Joint between arm_5_link and arm_6_link
     Kp[6] = 1000.; // Joint between arm_6_link and arm_7_link
-    Kp[7] = 100.; // Joint finger left
+    Kp[7] = 1000.; // Joint finger left
     Kp[8] = 100.; // Joint finger right
 
     Eigen::VectorXd Ki(9); 
     Ki[0] = 0.; // Joint between arm_base_link and arm_1_link
     Ki[1] = 0.; // Joint between arm_1_link and arm_2_link
     Ki[2] = 0.; // Joint between arm_2_link and arm_3_link
-    Ki[3] = 1.; // Joint between arm_3_link and arm_4_link
-    Ki[4] = 1.; // Joint between arm_4_link and arm_5_link
-    Ki[5] = 1.; // Joint between arm_5_link and arm_6_link
+    Ki[3] = 0.; // Joint between arm_3_link and arm_4_link
+    Ki[4] = 0.; // Joint between arm_4_link and arm_5_link
+    Ki[5] = 0.; // Joint between arm_5_link and arm_6_link
     Ki[6] = 1.; // Joint between arm_6_link and arm_7_link
     Ki[7] = 1.; // Joint finger left
     Ki[8] = 1.; // Joint finger right
@@ -261,7 +283,7 @@ int main(){
     Kd[2] = 1.;
     Kd[3] = 1.;
     Kd[4] = 1.;
-    Kd[5] = 1.;
+    Kd[5] = 40.;
     Kd[6] = 1.;
     Kd[7] = 1.;
     Kd[8] = 1.;
@@ -312,7 +334,7 @@ int main(){
 
     // auto end = std::chrono::steady_clock::now();
 
-    display_run_results(simu, timestep);
+    display_run_results(simu, timestep, ctrl);
     
     // std::cout << "Simulation ran for " << 
     //     std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() 
@@ -331,24 +353,16 @@ int main(){
 
     // std::cout<<"Moving second joint pi/2 radians"<<std::endl;
 
-    // Specify joint angle
-    ctrl[0] = M_PI_2;
-    ctrl[2] = M_PI_2;
-    // ctrl[8] = 1;
-    // ctrl[8] = 1;
-    // ctrl[3] = M_PI_2;
-    // ctrl[4] = M_PI_2;
-    // ctrl[5] = M_PI_2;
-    std::cout << "Joint angles requested" << std::endl;
-    for (auto c : ctrl) std::cout << c << " ";
-    std::cout << std::endl;
+    // joint_ctrl 
+    ctrl[6] = M_PI_2;
+    ctrl[7] = 1;
 
     // Set controller
     arm_robot->controllers()[0]->set_parameters(ctrl);
 
     // Run simulation
     simu.run(simulation_time);
-    display_run_results(simu, timestep);
+    display_run_results(simu, timestep, ctrl);
 
     // Create a velocities log file to analyze the top velocity of the movement
     // std::vector<Eigen::VectorXd> velocities = std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities;
