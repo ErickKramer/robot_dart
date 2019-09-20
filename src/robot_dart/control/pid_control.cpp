@@ -46,8 +46,6 @@ namespace robot_dart {
             // Compute torque Commands 
             Eigen::VectorXd commands = Pout + Iout + Dout;
 
-
-
             // std::cout << "Target Positions " << std::endl;
             // std::cout << target_positions.transpose() << std::endl;
             // std::cout << "Current Positions " << std::endl;
