@@ -355,7 +355,9 @@ int main(){
 
     // joint_ctrl 
     ctrl[6] = M_PI_2;
-    ctrl[7] = 1;
+    // ctrl[7] = 1;
+    // arm_robot->skeleton()->setPosition(7,-0.029);
+    // arm_robot->skeleton()->setPosition(8,-0.029);
 
     // Set controller
     arm_robot->controllers()[0]->set_parameters(ctrl);
