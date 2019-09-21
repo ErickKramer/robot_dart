@@ -226,7 +226,8 @@ int main(){
     double numDOFs = arm_robot->skeleton()->getNumDofs();
 
     // Set of desired initial configuration
-    std::vector<double> ctrl(numDOFs, 0.0);
+    // std::vector<double> ctrl(numDOFs, 0.0);
+    std::vector<double> ctrl(8, 0.0);
 
     // Set values for the gripper (Close position)
     // ctrl[7] = -0.029;
@@ -239,6 +240,11 @@ int main(){
     
     // Add a PID Controller for the arm  
     arm_robot->add_controller(std::make_shared<robot_dart::control::PIDControl>(ctrl));
+    
+    auto control_dof = 
+        std::static_pointer_cast<robot_dart::control::PIDControl>(arm_robot->controllers()[0])
+            -> _control_dof;
+    std::cout << "Control dof " << control_dof << std::endl;
 
     // PID_params
     // Computes Kp Vector
@@ -252,9 +258,9 @@ int main(){
     - 5: Flexing : Set 
     - 6: Rolling : Set 
     - 7: Left finger : Not Set 
-    - 8: Right finger : Not Set 
+    - 8: Right finger : Not Set  (Mimic)
     */
-    Eigen::VectorXd Kp(9); 
+    Eigen::VectorXd Kp(control_dof); 
     Kp[0] = 1000.; // Joint between arm_base_link and arm_1_link
     Kp[1] = 1000.; // Joint between arm_1_link and arm_2_link
     Kp[2] = 1000.; // Joint between arm_2_link and arm_3_link
@@ -263,9 +269,9 @@ int main(){
     Kp[5] = 1000.; // Joint between arm_5_link and arm_6_link
     Kp[6] = 1000.; // Joint between arm_6_link and arm_7_link
     Kp[7] = 1000.; // Joint finger left
-    Kp[8] = 100.; // Joint finger right
+    // Kp[8] = 100.; // Joint finger right
 
-    Eigen::VectorXd Ki(9); 
+    Eigen::VectorXd Ki(control_dof); 
     Ki[0] = 0.; // Joint between arm_base_link and arm_1_link
     Ki[1] = 0.; // Joint between arm_1_link and arm_2_link
     Ki[2] = 0.; // Joint between arm_2_link and arm_3_link
@@ -274,10 +280,10 @@ int main(){
     Ki[5] = 0.; // Joint between arm_5_link and arm_6_link
     Ki[6] = 1.; // Joint between arm_6_link and arm_7_link
     Ki[7] = 1.; // Joint finger left
-    Ki[8] = 1.; // Joint finger right
+    // Ki[8] = 1.; // Joint finger right
 
     // Computes Kd Vector
-    Eigen::VectorXd Kd(9); 
+    Eigen::VectorXd Kd(control_dof); 
     Kd[0] = 1.;
     Kd[1] = 40.;
     Kd[2] = 1.;
@@ -286,7 +292,7 @@ int main(){
     Kd[5] = 40.;
     Kd[6] = 1.;
     Kd[7] = 1.;
-    Kd[8] = 1.;
+    // Kd[8] = 1.;
 
     // Set PD gains
     // std::static_pointer_cast<robot_dart::control::PDControl>(arm_robot->controllers()[0])
@@ -354,28 +360,28 @@ int main(){
     // std::cout<<"Moving second joint pi/2 radians"<<std::endl;
 
     // joint_ctrl 
-    ctrl[6] = M_PI_2;
-    // ctrl[7] = 1;
-    // arm_robot->skeleton()->setPosition(7,-0.029);
-    // arm_robot->skeleton()->setPosition(8,-0.029);
+    // ctrl[6] = M_PI_2;
+    // // ctrl[7] = 1;
+    // // arm_robot->skeleton()->setPosition(7,-0.029);
+    // // arm_robot->skeleton()->setPosition(8,-0.029);
 
-    // Set controller
-    arm_robot->controllers()[0]->set_parameters(ctrl);
+    // // Set controller
+    // arm_robot->controllers()[0]->set_parameters(ctrl);
 
-    // Run simulation
-    simu.run(simulation_time);
-    display_run_results(simu, timestep, ctrl);
+    // // Run simulation
+    // simu.run(simulation_time);
+    // display_run_results(simu, timestep, ctrl);
 
-    // Create a velocities log file to analyze the top velocity of the movement
-    // std::vector<Eigen::VectorXd> velocities = std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities;
-    // backup(velocities, "text", "velocities.txt");
+    // // Create a velocities log file to analyze the top velocity of the movement
+    // // std::vector<Eigen::VectorXd> velocities = std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities;
+    // // backup(velocities, "text", "velocities.txt");
 
-    // Reset States vector
-    std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
-    std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states.clear();
-    std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities.clear();
+    // // Reset States vector
+    // std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
+    // std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states.clear();
+    // std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities.clear();
 
-    std::cout<<"-----------------------------------"<<std::endl;
+    // std::cout<<"-----------------------------------"<<std::endl;
 
     // std::cout<<"Moving second joint -pi/2 radians"<<std::endl;
 
