@@ -53,12 +53,16 @@ namespace robot_dart {
             Eigen::VectorXd get_forces() const;
             void set_forces(const Eigen::VectorXd& forces);
 
+            // Making _control_dof public
+            size_t _control_dof;
+
         protected:
             std::weak_ptr<Robot> _robot;
             std::vector<double> _ctrl;
             double _weight;
             bool _active, _full_control;
-            size_t _start_dof, _dof, _control_dof;
+            // size_t _start_dof, _dof, _control_dof;
+            size_t _start_dof, _dof;
 #if DART_MAJOR_VERSION > 6 || (DART_MAJOR_VERSION == 6 && DART_MINOR_VERSION > 6)
             std::vector<size_t> _mimic_dofs;
 #endif
