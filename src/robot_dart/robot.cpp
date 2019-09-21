@@ -83,13 +83,14 @@ namespace robot_dart {
         Eigen::VectorXd commands = Eigen::VectorXd::Zero(_skeleton->getNumDofs());
         for (auto& ctrl : _controllers) {
             if (ctrl->active())
+                std::cout << "Ctrl is active " << std::endl;
                 commands += ctrl->weight() * ctrl->commands(t);
         }
 
-        // _skeleton->setCommands(commands);
+        _skeleton->setCommands(commands);
         // Testing passing indices of the joints to set the commands to 
-        std::vector<std::size_t> indices_arm{0,1,2,3,4,5,6};
-        _skeleton->setCommands(indices_arm, commands.head(7));
+        // std::vector<std::size_t> indices_arm{0,1,2,3,4,5,6};
+        // _skeleton->setCommands(indices_arm, commands.head(7));
         
         // _skeleton->setCommand(7, -1);
         // _skeleton->setCommand(8, -1);
