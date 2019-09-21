@@ -49,7 +49,7 @@ namespace robot_dart {
             // std::cout << "Target Positions " << std::endl;
             // std::cout << target_positions.transpose() << std::endl;
             // std::cout << "Current Positions " << std::endl;
-            // std::cout << q.transpose() << std::endl;
+            // std::cout << current_positions.transpose() << std::endl;
             // std::cout << "Current Vel " << std::endl;
             // std::cout << dq.transpose() << std::endl;
             // std::cout << "Commands " << std::endl;
