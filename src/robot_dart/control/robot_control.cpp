@@ -37,8 +37,11 @@ namespace robot_dart {
                 if (joint->getActuatorType() == dart::dynamics::Joint::MIMIC)
                     _mimic_dofs.push_back(i);
             }
-
+            // std::cout << "Number of mimic DOFS " << _mimic_dofs.size() << std::endl;
             _control_dof -= _mimic_dofs.size();
+            std::cout << "Number of controllable DOFS " << _control_dof << std::endl;
+            std::cout << "Start dof " << _start_dof << std::endl;
+            std::cout << "Full control flag " << _full_control << std::endl;
 #endif
 
             for (size_t i = 0; i < _start_dof; i++)
