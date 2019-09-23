@@ -7,6 +7,7 @@
 
 #include <dart/collision/fcl/FCLCollisionDetector.hpp>
 #include <dart/constraint/ConstraintSolver.hpp>
+#include <dart/dynamics/DegreeOfFreedom.hpp>
 
 #include <fstream>
 #include <iterator>
@@ -128,17 +129,22 @@ void display_run_results(robot_dart::RobotDARTSimu simu, double timestep, std::v
     std::cout << "Number of pose_states recorded " <<
         poses.size() << std::endl;
     
-    Eigen::VectorXd target_positions = Eigen::VectorXd::Map(ctrl.data(), ctrl.size());
-    std::cout << "Joint angles requested " << target_positions.transpose() << std::endl;
-
     Eigen::VectorXd end_configuration = std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->
         joints_states.back(); 
-    
     std::cout << "Final joints configuration \n" << end_configuration.transpose() << std::endl;
-    
-    // std::cout << "Final joints configuration \n" << std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->
-        // joints_states.back().transpose() << std::endl;
+   
+    Eigen::VectorXd target_positions = Eigen::VectorXd::Map(ctrl.data(), ctrl.size());
 
+    // In the case that a joint is mimic (e.g. gripper fingers)
+    if (target_positions.size() < end_configuration.size()){
+        // Resize the target_positions vector used to control the robot to match the joints configuration vector
+        target_positions.conservativeResize(end_configuration.size());
+        // Copy the target position value of the last joint controlled to the mimic joint position
+        target_positions[end_configuration.size()-1] = target_positions[end_configuration.size()-2];
+    } 
+
+    std::cout << "Joint angles requested " << target_positions.transpose() << std::endl;
+    
     std::cout << "Error for the arm configuration \n" << (target_positions - end_configuration).transpose() << std::endl;
 
     std::cout << "Pose of the end effector \n " << poses.back().transpose() << std::endl;
@@ -223,17 +229,25 @@ int main(){
     #endif
 
     // Get DOFs of the robot
-    double numDOFs = arm_robot->skeleton()->getNumDofs();
+    double num_dofs = arm_robot->skeleton()->getNumDofs();
+
+    // Get DOFs that are controllable (not mimic)
+    double mimic_joints = 0;
+    for (size_t i = 0; i < num_dofs ; i++){
+        auto joint = arm_robot->skeleton()->getDof(i)->getJoint();
+        if (joint->getActuatorType() == dart::dynamics::Joint::MIMIC){
+            mimic_joints++;
+        }
+    }
+    int num_ctrl_dofs = static_cast<int>(num_dofs - mimic_joints);    
 
     // Set of desired initial configuration
-    // std::vector<double> ctrl(numDOFs, 0.0);
-    std::vector<double> ctrl(8, 0.0);
+    // std::vector<double> ctrl(num_dofs, 0.0);
+    std::vector<double> ctrl(num_ctrl_dofs, 0.0);
 
     // Set values for the gripper (Close position)
     // ctrl[7] = -0.029;
     // ctrl[8] = -0.029;
-
-    // std::vector<double> ctrl = {0., 0., 0., 0., 0., 0., 0.};
 
     // Add a PD-controller to the arm
     // arm_robot->add_controller(std::make_shared<robot_dart::control::PDControl>(ctrl));
@@ -241,11 +255,6 @@ int main(){
     // Add a PID Controller for the arm  
     arm_robot->add_controller(std::make_shared<robot_dart::control::PIDControl>(ctrl));
     
-    auto control_dof = 
-        std::static_pointer_cast<robot_dart::control::PIDControl>(arm_robot->controllers()[0])
-            -> _control_dof;
-    std::cout << "Control dof " << control_dof << std::endl;
-
     // PID_params
     // Computes Kp Vector
     /*
@@ -260,7 +269,7 @@ int main(){
     - 7: Left finger : Not Set 
     - 8: Right finger : Not Set  (Mimic)
     */
-    Eigen::VectorXd Kp(control_dof); 
+    Eigen::VectorXd Kp(num_ctrl_dofs); 
     Kp[0] = 1000.; // Joint between arm_base_link and arm_1_link
     Kp[1] = 1000.; // Joint between arm_1_link and arm_2_link
     Kp[2] = 1000.; // Joint between arm_2_link and arm_3_link
@@ -271,7 +280,7 @@ int main(){
     Kp[7] = 1000.; // Joint finger left
     // Kp[8] = 100.; // Joint finger right
 
-    Eigen::VectorXd Ki(control_dof); 
+    Eigen::VectorXd Ki(num_ctrl_dofs); 
     Ki[0] = 0.; // Joint between arm_base_link and arm_1_link
     Ki[1] = 0.; // Joint between arm_1_link and arm_2_link
     Ki[2] = 0.; // Joint between arm_2_link and arm_3_link
@@ -283,7 +292,7 @@ int main(){
     // Ki[8] = 1.; // Joint finger right
 
     // Computes Kd Vector
-    Eigen::VectorXd Kd(control_dof); 
+    Eigen::VectorXd Kd(num_ctrl_dofs); 
     Kd[0] = 1.;
     Kd[1] = 40.;
     Kd[2] = 1.;
@@ -303,8 +312,8 @@ int main(){
       ->set_pid(Kp, Ki, Kd);
     
     // Set Accelaration limits
-    Eigen::VectorXd acc_upper_limit = Eigen::VectorXd::Ones(numDOFs)*0.01;
-    Eigen::VectorXd acc_lower_limit = Eigen::VectorXd::Ones(numDOFs)*-0.01;
+    Eigen::VectorXd acc_upper_limit = Eigen::VectorXd::Ones(num_dofs)*0.01;
+    Eigen::VectorXd acc_lower_limit = Eigen::VectorXd::Ones(num_dofs)*-0.01;
     arm_robot->skeleton()->setAccelerationUpperLimits(acc_upper_limit);
     arm_robot->skeleton()->setAccelerationLowerLimits(acc_lower_limit);
 
@@ -322,7 +331,7 @@ int main(){
 
     // Display arm information
     std::cout << "Arm: " << arm_robot->name() << std::endl;
-    std::cout << "Number of DoF: " << numDOFs << std::endl;
+    std::cout << "Number of DoF: " << num_dofs << std::endl;
     std::cout << "Acceleration lower " << arm_robot -> skeleton() -> getAccelerationLowerLimits().transpose() << std::endl;
     std::cout << "Acceleration higher " << arm_robot -> skeleton() -> getAccelerationUpperLimits().transpose() << std::endl;
     std::cout << "Velocity lower " << arm_robot -> skeleton() -> getVelocityLowerLimits().transpose() << std::endl;
