@@ -269,7 +269,8 @@ int main(){
     - 7: Left finger : Not Set 
     - 8: Right finger : Not Set  (Mimic)
     */
-    Eigen::VectorXd Kp(num_ctrl_dofs); 
+    // Eigen::VectorXd Kp(num_ctrl_dofs); 
+    Eigen::VectorXd Kp = Eigen::VectorXd::Ones(num_ctrl_dofs); 
     Kp[0] = 1000.; // Joint between arm_base_link and arm_1_link
     Kp[1] = 1000.; // Joint between arm_1_link and arm_2_link
     Kp[2] = 1000.; // Joint between arm_2_link and arm_3_link
@@ -280,7 +281,7 @@ int main(){
     Kp[7] = 1000.; // Joint finger left
     // Kp[8] = 100.; // Joint finger right
 
-    Eigen::VectorXd Ki(num_ctrl_dofs); 
+    Eigen::VectorXd Ki = Eigen::VectorXd::Ones(num_ctrl_dofs); 
     Ki[0] = 0.; // Joint between arm_base_link and arm_1_link
     Ki[1] = 0.; // Joint between arm_1_link and arm_2_link
     Ki[2] = 0.; // Joint between arm_2_link and arm_3_link
@@ -292,7 +293,7 @@ int main(){
     // Ki[8] = 1.; // Joint finger right
 
     // Computes Kd Vector
-    Eigen::VectorXd Kd(num_ctrl_dofs); 
+    Eigen::VectorXd Kd = Eigen::VectorXd::Ones(num_ctrl_dofs); 
     Kd[0] = 1.;
     Kd[1] = 40.;
     Kd[2] = 1.;
