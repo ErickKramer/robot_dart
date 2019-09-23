@@ -83,7 +83,6 @@ namespace robot_dart {
         Eigen::VectorXd commands = Eigen::VectorXd::Zero(_skeleton->getNumDofs());
         for (auto& ctrl : _controllers) {
             if (ctrl->active())
-                std::cout << "Ctrl is active " << std::endl;
                 commands += ctrl->weight() * ctrl->commands(t);
         }
 
