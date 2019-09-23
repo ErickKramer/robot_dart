@@ -367,35 +367,34 @@ int main(){
 
     std::cout<<"-----------------------------------"<<std::endl;
 
-    // std::cout<<"Moving second joint pi/2 radians"<<std::endl;
+    std::cout<<"Moving second joint pi/2 radians"<<std::endl;
 
-    // joint_ctrl 
-    // ctrl[6] = M_PI_2;
-    // // ctrl[7] = 1;
-    // // arm_robot->skeleton()->setPosition(7,-0.029);
-    // // arm_robot->skeleton()->setPosition(8,-0.029);
+    ctrl[1] = M_PI_2;
+    // ctrl[7] = 1;
+    // arm_robot->skeleton()->setPosition(7,-0.029);
+    // arm_robot->skeleton()->setPosition(8,-0.029);
 
-    // // Set controller
-    // arm_robot->controllers()[0]->set_parameters(ctrl);
+    // Set controller
+    arm_robot->controllers()[0]->set_parameters(ctrl);
 
-    // // Run simulation
-    // simu.run(simulation_time);
-    // display_run_results(simu, timestep, ctrl);
+    // Run simulation
+    simu.run(simulation_time);
+    display_run_results(simu, timestep, ctrl);
 
-    // // Create a velocities log file to analyze the top velocity of the movement
-    // // std::vector<Eigen::VectorXd> velocities = std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities;
-    // // backup(velocities, "text", "velocities.txt");
+    // Create a velocities log file to analyze the top velocity of the movement
+    // std::vector<Eigen::VectorXd> velocities = std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities;
+    // backup(velocities, "text", "velocities.txt");
 
-    // // Reset States vector
-    // std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
-    // std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states.clear();
-    // std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities.clear();
+    // Reset States vector
+    std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
+    std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states.clear();
+    std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities.clear();
 
-    // std::cout<<"-----------------------------------"<<std::endl;
+    std::cout<<"-----------------------------------"<<std::endl;
 
     // std::cout<<"Moving second joint -pi/2 radians"<<std::endl;
 
-    // // Specify joint angle
+    // Specify joint angle
     // ctrl[1] = -M_PI_2;
     // ctrl[3] = -M_PI_2;
     // ctrl[5] = -M_PI_2;
