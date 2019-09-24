@@ -13,7 +13,6 @@
 #include <iterator>
 #include <chrono>
 #include <unistd.h>
-
 // #include <Eigen/Dense>
 // #include <Eigen/Geometry>
 
@@ -210,14 +209,14 @@ int main(){
     #ifdef GRAPHIC
         // Specify the graphics for the simulator
         // Pass the world, resolution (widht, height)
-        if (system.compare("Home")){
+        if (system == "Home"){
             // Resolution screen of personal Asus
             simu.set_graphics(
                 std::make_shared<robot_dart::graphics::Graphics>(simu.world(), 1920,1080, true, true));
 
         }
-        else if(system.compare("FKIE")){
-            std::cout<<"Running 1920x1080 resolution " << std::endl;
+        else if(system == "FKIE"){
+            std::cout<<"Running 1920x1200 resolution " << std::endl;
             // Resolution screen at work 
             simu.set_graphics(
                 std::make_shared<robot_dart::graphics::Graphics>(simu.world(), 1920,1200, true, true));
@@ -229,7 +228,7 @@ int main(){
 
         // Set camera position looking at the center
         std::static_pointer_cast<robot_dart::graphics::Graphics>(simu.graphics())->
-            look_at({0., 5., 1}, {0., 0., 0.});
+            look_at({0., 3., 0.}, {0., 0., 0.5});
     #endif
 
     // Get DOFs of the robot
@@ -273,40 +272,48 @@ int main(){
     - 7: Left finger : Not Set 
     - 8: Right finger : Not Set  (Mimic)
     */
-    // Eigen::VectorXd Kp(num_ctrl_dofs); 
+
+    // double joint_to_tune = 3;
+    double joint_to_tune;
+
+    // Load PID Params  
     Eigen::VectorXd Kp = Eigen::VectorXd::Ones(num_ctrl_dofs); 
-    Kp[0] = 1000.; // Joint between arm_base_link and arm_1_link
-    Kp[1] = 1000.; // Joint between arm_1_link and arm_2_link
-    Kp[2] = 1000.; // Joint between arm_2_link and arm_3_link
-    Kp[3] = 1000.; // Joint between arm_3_link and arm_4_link
-    Kp[4] = 1000.; // Joint between arm_4_link and arm_5_link
-    Kp[5] = 1000.; // Joint between arm_5_link and arm_6_link
-    Kp[6] = 1000.; // Joint between arm_6_link and arm_7_link
-    Kp[7] = 1000.; // Joint finger left
-    // Kp[8] = 100.; // Joint finger right
-
     Eigen::VectorXd Ki = Eigen::VectorXd::Ones(num_ctrl_dofs); 
-    Ki[0] = 0.; // Joint between arm_base_link and arm_1_link
-    Ki[1] = 0.; // Joint between arm_1_link and arm_2_link
-    Ki[2] = 0.; // Joint between arm_2_link and arm_3_link
-    Ki[3] = 0.; // Joint between arm_3_link and arm_4_link
-    Ki[4] = 0.; // Joint between arm_4_link and arm_5_link
-    Ki[5] = 0.; // Joint between arm_5_link and arm_6_link
-    Ki[6] = 1.; // Joint between arm_6_link and arm_7_link
-    Ki[7] = 1.; // Joint finger left
-    // Ki[8] = 1.; // Joint finger right
-
-    // Computes Kd Vector
     Eigen::VectorXd Kd = Eigen::VectorXd::Ones(num_ctrl_dofs); 
-    Kd[0] = 1.;
-    Kd[1] = 40.;
-    Kd[2] = 1.;
-    Kd[3] = 1.;
-    Kd[4] = 1.;
-    Kd[5] = 40.;
-    Kd[6] = 1.;
-    Kd[7] = 1.;
-    // Kd[8] = 1.;
+    double i_min;
+    double i_max;
+    std::ifstream pid_file("src/arm_sim/pid_params.txt");
+    std::string _line;
+    
+    while(std::getline(pid_file, _line)){
+        std::istringstream line(_line);
+        std::vector<std::string> params(std::istream_iterator<std::string>{line},
+                    std::istream_iterator<std::string>());
+        if (params[0] == "P"){
+            for (size_t i = 1; i < params.size(); i++){
+                Kp[i-1] = atof(params[i].c_str());
+            }
+            std::cout << "Kp " << Kp.transpose() << std::endl;
+        }else if (params[0] == "I"){
+            for (size_t i = 1; i < params.size(); i++){
+                Ki[i-1] = atof(params[i].c_str());
+            }
+            std::cout << "Ki " << Ki.transpose() << std::endl;
+        }else if (params[0] == "D"){
+            for (size_t i = 1; i < params.size(); i++){
+                Kd[i-1] = atof(params[i].c_str());
+            }
+            std::cout << "Kd " << Kd.transpose() << std::endl;
+        }else if (params[0] == "i_limits"){
+            i_min = atof(params[1].c_str());
+            i_max = atof(params[2].c_str());
+            std::cout << "i limits " << i_min << " " << i_max << std::endl;
+        }else if (params[0] == "joint_to_tune"){
+            joint_to_tune = atof(params[1].c_str());
+        }
+
+    }
+    pid_file.close();
 
     // Set PD gains
     // std::static_pointer_cast<robot_dart::control::PDControl>(arm_robot->controllers()[0])
@@ -314,7 +321,7 @@ int main(){
 
     // Set PD gains
     std::static_pointer_cast<robot_dart::control::PIDControl>(arm_robot->controllers()[0])
-      ->set_pid(Kp, Ki, Kd);
+      ->set_pid(Kp, Ki, Kd, i_min, i_max);
     
     // Set Accelaration limits
     Eigen::VectorXd acc_upper_limit = Eigen::VectorXd::Ones(num_dofs)*0.01;
@@ -350,7 +357,7 @@ int main(){
     // auto start = std::chrono::steady_clock::now();
     
     // Run simulation
-    simu.run(simulation_time);
+    simu.run(simulation_time/4);
 
     // auto end = std::chrono::steady_clock::now();
 
@@ -371,13 +378,11 @@ int main(){
 
     std::cout<<"-----------------------------------"<<std::endl;
 
-    std::cout<<"Moving second joint pi/2 radians"<<std::endl;
+    std::cout<<"Moving joint " << joint_to_tune << " pi/2 radians"<<std::endl;
 
-    // ctrl[1] = M_PI_2;
-    // ctrl[7] = -0.030;
-    ctrl[7] = 0.033;
-    // arm_robot->skeleton()->setPosition(7,-0.029);
-    // arm_robot->skeleton()->setPosition(8,-0.029);
+    ctrl[joint_to_tune] = M_PI_2;
+    // ctrl[joint_to_tune] = 0.033;
+    // ctrl[7] = 0.033;
 
     // Set controller
     arm_robot->controllers()[0]->set_parameters(ctrl);
@@ -397,11 +402,7 @@ int main(){
 
     std::cout<<"-----------------------------------"<<std::endl;
 
-    // ctrl[1] = M_PI_2;
-    // ctrl[7] = -0.030;
-    ctrl[7] = 0.0;
-    // arm_robot->skeleton()->setPosition(7,-0.029);
-    // arm_robot->skeleton()->setPosition(8,-0.029);
+    ctrl[joint_to_tune] = 0;
 
     // Set controller
     arm_robot->controllers()[0]->set_parameters(ctrl);
