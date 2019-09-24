@@ -18,19 +18,20 @@ namespace robot_dart {
             void configure() override;
             Eigen::VectorXd calculate(double) override;
 
-            void set_pid(double p, double i, double d);
-            void set_pid(const Eigen::VectorXd& p, const Eigen::VectorXd& i, const Eigen::VectorXd& d);
+            void set_pid(double p, double i, double d, double i_min, double i_max);
+            void set_pid(const Eigen::VectorXd& p, const Eigen::VectorXd& i, const Eigen::VectorXd& d, double i_min, double i_max);
 
             std::tuple<Eigen::VectorXd, Eigen::VectorXd, Eigen::VectorXd> pid() const;
 
             std::shared_ptr<RobotControl> clone() const override;
-
         protected:
             Eigen::VectorXd _Kp;
             Eigen::VectorXd _Ki;
             Eigen::VectorXd _Kd;
             Eigen::VectorXd _pre_error;
             Eigen::VectorXd _integral;
+            double _i_min;
+            double _i_max;
         };
     } // namespace control
 } // namespace robot_dart
