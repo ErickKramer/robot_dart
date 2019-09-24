@@ -407,6 +407,7 @@
     <parent link="gripper_link" />
     <child link="l_gripper_finger_link" />
     <axis xyz="0 -1 0" />
+    <mimic joint="r_gripper_finger_joint" multiplier="1" offset="0"/>
   <limit effort="60" lower="0.0" upper="0.05" velocity="0.05" /><dynamics damping="100.0" />
   </joint>
 </robot>
