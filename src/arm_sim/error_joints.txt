@@ -1,0 +1,9 @@
+Error obtained by moving the joints PI_2, and gripper 0.033 (Open position)
+0: 0
+1: 0.0255697
+2: 0 
+3: 0.008213
+4: 0
+5: 0.000885585
+6: 0 
+7: 0 
