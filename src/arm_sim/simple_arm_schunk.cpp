@@ -179,8 +179,8 @@ void backup(const std::vector<Eigen::VectorXd> v, std::string file_type, std::st
 
 int main(){
 
-    std::string system = "Home";
-    // std::string system = "FKIE";
+    // std::string system = "Home";
+    std::string system = "FKIE";
 
     // ---------------- URDF ---------------------
     // Specify meshes packages
@@ -192,6 +192,7 @@ int main(){
     // Load URDF
     // auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/arm_schunk_with_collisions.urdf", packages, "schunk lwa4d");
     auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/schunk_with_pg70.urdf", packages, "schunk lwa4d with PG70 gripper");
+    // auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/schunk_with_fetch.urdf", packages, "schunk lwa4d with PG70 gripper");
     // auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/iiwa14.urdf", packages, "iiwa14 arm");
 
     // ---------------- Simulator ---------------------
@@ -211,12 +212,15 @@ int main(){
         // Pass the world, resolution (widht, height)
         if (system.compare("Home")){
             // Resolution screen of personal Asus
-            simu.set_graphics(std::make_shared<robot_dart::graphics::Graphics>(simu.world(), 1920,1080, true, true));
+            simu.set_graphics(
+                std::make_shared<robot_dart::graphics::Graphics>(simu.world(), 1920,1080, true, true));
 
         }
         else if(system.compare("FKIE")){
+            std::cout<<"Running 1920x1080 resolution " << std::endl;
             // Resolution screen at work 
-            simu.set_graphics(std::make_shared<robot_dart::graphics::Graphics>(simu.world(), 1920,1200, true, true));
+            simu.set_graphics(
+                std::make_shared<robot_dart::graphics::Graphics>(simu.world(), 1920,1200, true, true));
         }
         else{
             // Generic resolution
@@ -246,7 +250,7 @@ int main(){
     std::vector<double> ctrl(num_ctrl_dofs, 0.0);
 
     // Set values for the gripper (Close position)
-    // ctrl[7] = -0.029;
+    // ctrl[7] = 1;
     // ctrl[8] = -0.029;
 
     // Add a PD-controller to the arm
@@ -369,8 +373,33 @@ int main(){
 
     std::cout<<"Moving second joint pi/2 radians"<<std::endl;
 
-    ctrl[1] = M_PI_2;
-    // ctrl[7] = 1;
+    // ctrl[1] = M_PI_2;
+    // ctrl[7] = -0.030;
+    ctrl[7] = 0.03;
+    // arm_robot->skeleton()->setPosition(7,-0.029);
+    // arm_robot->skeleton()->setPosition(8,-0.029);
+
+    // Set controller
+    arm_robot->controllers()[0]->set_parameters(ctrl);
+
+    // Run simulation
+    simu.run(simulation_time);
+    display_run_results(simu, timestep, ctrl);
+
+    // Create a velocities log file to analyze the top velocity of the movement
+    // std::vector<Eigen::VectorXd> velocities = std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities;
+    // backup(velocities, "text", "velocities.txt");
+
+    // Reset States vector
+    std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
+    std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states.clear();
+    std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities.clear();
+
+    std::cout<<"-----------------------------------"<<std::endl;
+
+    // ctrl[1] = M_PI_2;
+    // ctrl[7] = -0.030;
+    ctrl[7] = 0.0;
     // arm_robot->skeleton()->setPosition(7,-0.029);
     // arm_robot->skeleton()->setPosition(8,-0.029);
 
