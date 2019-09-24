@@ -39,9 +39,9 @@ namespace robot_dart {
             }
             // std::cout << "Number of mimic DOFS " << _mimic_dofs.size() << std::endl;
             _control_dof -= _mimic_dofs.size();
-            std::cout << "Number of controllable DOFS " << _control_dof << std::endl;
-            std::cout << "Start dof " << _start_dof << std::endl;
-            std::cout << "Full control flag " << _full_control << std::endl;
+            // std::cout << "Number of controllable DOFS " << _control_dof << std::endl;
+            // std::cout << "Start dof " << _start_dof << std::endl;
+            // std::cout << "Full control flag " << _full_control << std::endl;
 #endif
 
             for (size_t i = 0; i < _start_dof; i++)
