@@ -375,7 +375,7 @@ int main(){
 
     // ctrl[1] = M_PI_2;
     // ctrl[7] = -0.030;
-    ctrl[7] = 0.03;
+    ctrl[7] = 0.033;
     // arm_robot->skeleton()->setPosition(7,-0.029);
     // arm_robot->skeleton()->setPosition(8,-0.029);
 
