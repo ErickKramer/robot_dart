@@ -20,8 +20,7 @@ namespace robot_dart {
         {
             ROBOT_DART_ASSERT(_control_dof == _ctrl.size(), "PIDControl: Controller parameters size is not the same as DOFs of the robot", Eigen::VectorXd::Zero(_control_dof));
             auto robot = _robot.lock();
-            Eigen::VectorXd target_positions = robot_dart::Utils::round_small(
-                Eigen::VectorXd::Map(_ctrl.data(), _ctrl.size()));
+            Eigen::VectorXd target_positions = Eigen::VectorXd::Map(_ctrl.data(), _ctrl.size());
 
             Eigen::VectorXd current_positions = robot_dart::Utils::round_small(get_positions());
             auto time_step = robot->skeleton()->getTimeStep();
