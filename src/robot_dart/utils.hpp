@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <exception>
 #include <iostream>
+#include <Eigen/Core>
 
 #ifndef ROBOT_DART_SHOW_WARNINGS
 #define ROBOT_DART_SHOW_WARNINGS false
@@ -29,6 +30,17 @@ namespace robot_dart {
             if (msg != "")
                 message += ": '" + msg + "'";
             return message;
+        }
+    };
+
+    class Utils{
+    public:
+        static Eigen::VectorXd round_small(Eigen::VectorXd v, double threshold = 1e-5){
+            for (int i = 0; i < v.size(); i++){
+                if (abs(v[i]) < threshold) 
+                    v[i] = 0;
+            }
+            return v; 
         }
     };
 } // namespace robot_dart
