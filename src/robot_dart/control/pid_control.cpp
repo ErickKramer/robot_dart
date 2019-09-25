@@ -32,7 +32,8 @@ namespace robot_dart {
             Eigen::VectorXd Pout = _Kp.array() * error.array();
 
             // Compute Integral term
-            _integral = _integral.array() + error.array() * time_step; 
+            // _integral = _integral.array() + error.array() * time_step; 
+            _integral = _integral.array() + ((error.array() + _pre_error.array())/2.0)*time_step;
             Eigen::VectorXd Iout = _Ki.array() * _integral.array();
 
             // Constraint the I term 
