@@ -1,9 +1,10 @@
 #include <iostream>
 #include <algorithm>
 #include <cstdlib>
-// #include <robot_dart/control/pd_control.hpp>
+#include <robot_dart/control/pd_control.hpp>
 #include <robot_dart/control/pid_control.hpp>
 #include <robot_dart/robot_dart_simu.hpp>
+#include "robot_dart/utils.hpp"
 
 #include <dart/collision/fcl/FCLCollisionDetector.hpp>
 #include <dart/constraint/ConstraintSolver.hpp>
@@ -116,6 +117,18 @@ double movement_duration(std::vector<Eigen::VectorXd> velocities, double timeste
 
 }
 
+double total_movement(Eigen::VectorXd init_conf, Eigen::VectorXd end_conf){
+    /*
+    Computes the amount of radians the arm moved from the initial configuration to 
+    the final configuration
+     */
+    double total = 0;
+    for (size_t i = 0; i < init_conf.size()-1; i++){
+        total += abs(end_conf[i] - init_conf[i]);
+    }
+    return total;
+}
+
 void display_run_results(robot_dart::RobotDARTSimu simu, double timestep, std::vector<double>& ctrl ){
     /*  Displays information relevant of the ran simulation
         Args:
@@ -128,6 +141,9 @@ void display_run_results(robot_dart::RobotDARTSimu simu, double timestep, std::v
     std::cout << "Number of pose_states recorded " <<
         poses.size() << std::endl;
     
+    Eigen::VectorXd initial_configuration = std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->
+        joints_states.front(); 
+    std::cout << "Initial joints configuration \n" << initial_configuration.transpose() << std::endl;
     Eigen::VectorXd end_configuration = std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->
         joints_states.back(); 
     std::cout << "Final joints configuration \n" << end_configuration.transpose() << std::endl;
@@ -147,6 +163,8 @@ void display_run_results(robot_dart::RobotDARTSimu simu, double timestep, std::v
     std::cout << "Error for the arm configuration \n" << (target_positions - end_configuration).transpose() << std::endl;
 
     std::cout << "Pose of the end effector \n " << poses.back().transpose() << std::endl;
+
+    std::cout << "Total arm movement " << total_movement(initial_configuration, end_configuration) << std::endl;
 
     // Collecte recorded velocities
     std::vector<Eigen::VectorXd> velocities = std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities;
@@ -269,7 +287,7 @@ int main(){
     - 4: Rolling : Set 
     - 5: Flexing : Set 
     - 6: Rolling : Set 
-    - 7: Left finger : Not Set 
+    - 7: Left finger : Set 
     - 8: Right finger : Not Set  (Mimic)
     */
 
@@ -381,8 +399,15 @@ int main(){
     std::cout<<"Moving joint " << joint_to_tune << " pi/2 radians"<<std::endl;
 
     ctrl[joint_to_tune] = M_PI_2;
-    // ctrl[joint_to_tune] = 0.033;
+    // ctrl[0] = M_PI_2;
+    // ctrl[1] = -M_PI_2;
+    // ctrl[2] = M_PI_2;
+    // ctrl[3] = -M_PI_2;
+    // ctrl[4] = M_PI_2;
+    // ctrl[5] = -M_PI_2;
+    // ctrl[6] = M_PI_2;
     // ctrl[7] = 0.033;
+    // ctrl[joint_to_tune] = 0.033;
 
     // Set controller
     arm_robot->controllers()[0]->set_parameters(ctrl);
@@ -392,8 +417,8 @@ int main(){
     display_run_results(simu, timestep, ctrl);
 
     // Create a velocities log file to analyze the top velocity of the movement
-    // std::vector<Eigen::VectorXd> velocities = std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities;
-    // backup(velocities, "text", "velocities.txt");
+    std::vector<Eigen::VectorXd> velocities = std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities;
+    backup(velocities, "text", "velocities_to_test.txt");
 
     // Reset States vector
     std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
@@ -402,7 +427,9 @@ int main(){
 
     std::cout<<"-----------------------------------"<<std::endl;
 
-    ctrl[joint_to_tune] = 0;
+    // ctrl[joint_to_tune] = 0;
+    std::vector<double> initial_conf(num_ctrl_dofs, 0.0);
+    ctrl = initial_conf;
 
     // Set controller
     arm_robot->controllers()[0]->set_parameters(ctrl);
@@ -412,8 +439,8 @@ int main(){
     display_run_results(simu, timestep, ctrl);
 
     // Create a velocities log file to analyze the top velocity of the movement
-    // std::vector<Eigen::VectorXd> velocities = std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities;
-    // backup(velocities, "text", "velocities.txt");
+    velocities = std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities;
+    backup(velocities, "text", "velocities_to_initial.txt");
 
     // Reset States vector
     std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
