@@ -81,7 +81,6 @@ struct JointVelDesc : public robot_dart::descriptor::BaseDescriptor{
 };
 
 
-
 Eigen::VectorXd compute_pose(Eigen::Isometry3d link_transform){
     // Computes rotation matrix
     Eigen::Matrix3d rot_matrix = link_transform.rotation();
@@ -97,7 +96,7 @@ Eigen::VectorXd compute_pose(Eigen::Isometry3d link_transform){
     Eigen::VectorXd pose(link_transform.translation().size() + euler.size());
     pose << translation, euler;
 
-    return pose;
+    return robot_dart::Utils::round_small(pose);
 }
 
 double movement_duration(std::vector<Eigen::VectorXd> velocities, double timestep){
@@ -123,7 +122,7 @@ double total_movement(Eigen::VectorXd init_conf, Eigen::VectorXd end_conf){
     the final configuration
      */
     double total = 0;
-    for (size_t i = 0; i < init_conf.size()-1; i++){
+    for (int i = 0; i < init_conf.size()-1; i++){
         total += abs(end_conf[i] - init_conf[i]);
     }
     return total;
@@ -137,15 +136,16 @@ void display_run_results(robot_dart::RobotDARTSimu simu, double timestep, std::v
     */
     std::cout << "Number of joints_states recorded " <<
         std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.size() << std::endl;
-    std::vector<Eigen::VectorXd> poses = std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states;
-    std::cout << "Number of pose_states recorded " <<
-        poses.size() << std::endl;
+    std::vector<Eigen::VectorXd> poses = 
+        std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states;
+    std::cout << "Number of pose_states recorded " << poses.size() << std::endl;
     
-    Eigen::VectorXd initial_configuration = std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->
-        joints_states.front(); 
+    Eigen::VectorXd initial_configuration = robot_dart::Utils::round_small(
+        std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.front()); 
     std::cout << "Initial joints configuration \n" << initial_configuration.transpose() << std::endl;
-    Eigen::VectorXd end_configuration = std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->
-        joints_states.back(); 
+
+    Eigen::VectorXd end_configuration = robot_dart::Utils::round_small(
+        std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.back()); 
     std::cout << "Final joints configuration \n" << end_configuration.transpose() << std::endl;
    
     Eigen::VectorXd target_positions = Eigen::VectorXd::Map(ctrl.data(), ctrl.size());
@@ -166,8 +166,9 @@ void display_run_results(robot_dart::RobotDARTSimu simu, double timestep, std::v
 
     std::cout << "Total arm movement " << total_movement(initial_configuration, end_configuration) << std::endl;
 
-    // Collecte recorded velocities
-    std::vector<Eigen::VectorXd> velocities = std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities;
+    // Collect recorded velocities
+    std::vector<Eigen::VectorXd> velocities = 
+        std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities;
     // backup(velocities, "text", "velocities.txt");
 
     // Computes movement duration
