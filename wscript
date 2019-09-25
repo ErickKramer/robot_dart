@@ -274,4 +274,4 @@ def build(bld):
         bld.install_files('${PREFIX}/lib', blddir + '/libRobotDARTSimu.so')
 
     # Testing installation of helper function for arm_simulation
-    bld.install_files('${PREFIX}/include/robot_dart', 'include/arm_dart/arm_simulation.hpp')
+    bld.install_files('${PREFIX}/include/robot_dart/arm/', 'include/arm_dart/arm_simulation.hpp')
