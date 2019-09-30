@@ -30,11 +30,12 @@ int main()
     std::string name = "schunk arm";
     double time_step = 0.001;
 
-    arm_dart::SchunkArm simu(urdf_path, packages,name,time_step);
+    arm_dart::SchunkArm arm_simu(urdf_path, packages,name,time_step);
+    arm_simu.init_simu(time_step);
 
     std::string pid_file_path = cur_path.parent_path().string() 
         + "/robot_dart/res/pid_params.txt"; 
     
-    simu.set_controller(pid_file_path);
+    arm_simu.init_controller(pid_file_path);
     return 0;
 }
