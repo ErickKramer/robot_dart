@@ -172,16 +172,121 @@ namespace arm_dart{
             //--------------------------------------------------------------------------
             for (const auto &descriptor: descriptors){
                 if (descriptor == "joint_states"){
-                    std::cout << "Adding joint states desc " << std::endl;
+                    // std::cout << "Adding joint states desc " << std::endl;
                     _simu->add_descriptor(std::make_shared<JointStateDesc>(*_simu));
                 }else if (descriptor == "pose_states"){
-                    std::cout << "Adding pose states desc " << std::endl;
+                    // std::cout << "Adding pose states desc " << std::endl;
                     _simu->add_descriptor(std::make_shared<PoseStateDesc>(*_simu));
                 }else if (descriptor == "velocity_states"){
-                    std::cout << "Adding velocity states desc " << std::endl;
+                    // std::cout << "Adding velocity states desc " << std::endl;
                     _simu->add_descriptor(std::make_shared<JointVelDesc>(*_simu));
                 }
             }
+        }
+        
+        //==============================================================================
+        void reset_descriptors(std::vector<std::string> descriptors){
+            //--------------------------------------------------------------------------
+            // Add descriptors to the simulation
+            //--------------------------------------------------------------------------
+            for (const auto &descriptor: descriptors){
+                if (descriptor == "joint_states"){
+                    std::static_pointer_cast<JointStateDesc>(_simu->descriptor(0))->joints_states.clear();
+                }else if (descriptor == "pose_states"){
+                    std::static_pointer_cast<PoseStateDesc>(_simu->descriptor(1))->pose_states.clear();
+                }else if (descriptor == "velocity_states"){
+                    std::static_pointer_cast<JointVelDesc>(_simu->descriptor(2))->joints_velocities.clear();
+                }
+            }
+        }
+
+        //==============================================================================
+        void run_simu(double simulation_time){
+            //--------------------------------------------------------------------------
+            // Run simulation
+            //--------------------------------------------------------------------------
+            _simu->run(simulation_time);
+            
+            //--------------------------------------------------------------------------
+            // Display simulation results
+            //--------------------------------------------------------------------------
+            std::cout << "Number of joints_states recorded " <<
+                std::static_pointer_cast<JointStateDesc>(_simu->descriptor(0))->joints_states.size() << std::endl;
+            
+            std::vector<Eigen::VectorXd> poses = 
+                std::static_pointer_cast<PoseStateDesc>(_simu->descriptor(1))->pose_states;
+            std::cout << "Number of pose_states recorded " << poses.size() << std::endl;
+    
+            Eigen::VectorXd initial_configuration = robot_dart::Utils::round_small(
+                std::static_pointer_cast<JointStateDesc>(_simu->descriptor(0))->joints_states.front()); 
+            std::cout << "Initial joints configuration \n" << initial_configuration.transpose() << std::endl;
+
+            Eigen::VectorXd end_configuration = robot_dart::Utils::round_small(
+                std::static_pointer_cast<JointStateDesc>(_simu->descriptor(0))->joints_states.back()); 
+            std::cout << "Final joints configuration \n" << end_configuration.transpose() << std::endl;
+   
+            Eigen::VectorXd target_positions = Eigen::VectorXd::Map(_ctrl.data(), _ctrl.size());
+
+            // In the case that a joint is mimic (e.g. gripper fingers)
+            if (target_positions.size() < end_configuration.size()){
+                // Resize the target_positions vector used to control the robot to match the joints configuration vector
+                target_positions.conservativeResize(end_configuration.size());
+                // Copy the target position value of the last joint controlled to the mimic joint position
+                target_positions[end_configuration.size()-1] = target_positions[end_configuration.size()-2];
+            } 
+
+            std::cout << "Joint angles requested " << target_positions.transpose() << std::endl;
+    
+            std::cout << "Error for the arm configuration \n" << (target_positions - end_configuration).transpose() << std::endl;
+
+            std::cout << "Pose of the end effector \n " << poses.back().transpose() << std::endl;
+
+            std::cout << "Total arm movement " << total_movement(initial_configuration, end_configuration) << std::endl;
+
+            // Collect recorded velocities
+            std::vector<Eigen::VectorXd> velocities = 
+                std::static_pointer_cast<JointVelDesc>(_simu->descriptor(2))->joints_velocities;
+            // backup(velocities, "text", "velocities.txt");
+
+            // Computes movement duration
+            double duration = movement_duration(velocities, _simu->step());
+            std::cout << "Arm stoped at " << duration << " seconds " << std::endl;
+            
+        }
+
+        //==============================================================================
+        double movement_duration(std::vector<Eigen::VectorXd> velocities, double timestep){
+            //--------------------------------------------------------------------------
+            // Computes duration of the arm movement by finding when the arm stopped moving,
+            // i.e. the joint velocities are almost zero
+            //--------------------------------------------------------------------------
+            double index = 0;
+            double threshold = 1e-3;
+
+            for (const auto &element : velocities){
+                if (element.isZero(threshold)){
+                    std::cout << "Index of joints velocities lower than threshold " << threshold <<
+                        " is " << index << std::endl;
+                    return timestep * index;
+                }
+                index++;
+            }
+
+            return velocities.size()*timestep;
+
+        }
+
+        //==============================================================================
+        double total_movement(Eigen::VectorXd init_conf, Eigen::VectorXd end_conf){
+            //--------------------------------------------------------------------------
+            // Computes the amount of radians the arm moved from the initial configuration to
+            // the final configuration
+            //--------------------------------------------------------------------------
+            double total = 0;
+            for (int i = 0; i < init_conf.size()-1; i++){
+                total += abs(end_conf[i] - init_conf[i]);
+            }
+            return total;
         }
 
         //==============================================================================
@@ -240,6 +345,7 @@ namespace arm_dart{
             ->set_pid(Kp, Ki, Kd, i_min, i_max);
 
             std::cout << "PID Controller set" << std::endl; 
+            _ctrl = ctrl;
         }
 
         //==============================================================================
@@ -264,12 +370,32 @@ namespace arm_dart{
             std::cout << "Velocity higher " << _arm_robot -> skeleton() -> getVelocityUpperLimits().transpose() << std::endl;
             std::cout<<"-----------------------------------"<<std::endl;
         }
+        
+        //==============================================================================
+        void set_goal_configuration(std::vector<double> conf){
+            //--------------------------------------------------------------------------
+            // Set the goal configuration for the arm
+            //--------------------------------------------------------------------------
+            _arm_robot->controllers()[0]->set_parameters(conf);
+            _ctrl = conf;
+        }
+
+        //==============================================================================
+        int get_control_dofs(){
+            return _num_ctrl_dofs;
+        }
+        
+        //==============================================================================
+        void reset_robot(){
+            _arm_robot.reset();
+        }
 
     protected:
         robot_t _arm_robot;
         int _num_dofs;
         int _num_ctrl_dofs;
         robot_dart::RobotDARTSimuPtr _simu;
+        std::vector<double> _ctrl;
 
 
 

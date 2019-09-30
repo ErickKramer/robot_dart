@@ -41,9 +41,27 @@ int main()
     // Set Acceleration limits
     arm_simu.set_acceleration_limits(0.01);
 
+    // Set descriptors to analyze the simulation
     std::vector<std::string> descriptors = {"joint_states", "pose_states","velocity_states"};
     arm_simu.set_descriptors(descriptors);
 
+    // Display robot information
     arm_simu.display_robot_info();
+
+    // Run simulation
+    double simulation_time = 10.;
+    arm_simu.run_simu(simulation_time/4);
+
+    // Reset states descriptors
+    arm_simu.reset_descriptors(descriptors);
+
+    std::vector<double> conf(arm_simu.get_control_dofs(), 0.0);
+    conf[1] = M_PI_2;
+
+    arm_simu.set_goal_configuration(conf);
+    arm_simu.run_simu(simulation_time);
+    arm_simu.reset_descriptors(descriptors);
+
+    arm_simu.reset_robot();
     return 0;
 }
