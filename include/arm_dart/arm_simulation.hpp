@@ -10,6 +10,7 @@
 #include <robot_dart/robot.hpp>
 #include <robot_dart/control/pid_control.hpp>
 #include <robot_dart/robot_dart_simu.hpp>
+#include <robot_dart/utils.hpp>
 
 // Load graphics
 #ifdef GRAPHIC
@@ -25,39 +26,102 @@
 #include <Eigen/Core>
 
 namespace arm_dart{
+
+    Eigen::VectorXd compute_pose(Eigen::Isometry3d link_transform){
+        //--------------------------------------------------------------------------
+        // Computes end_effector pose 
+        //--------------------------------------------------------------------------
+        // Computes rotation matrix
+        Eigen::Matrix3d rot_matrix = link_transform.rotation();
+        // Computes Homogeneous transformation matrix
+        // Eigen::Matrix4d transformation_matrix = link_transform.matrix();
+        // Computes Quaternions
+        Eigen::Quaterniond quat_end(rot_matrix);
+        // Computes Euler angles
+        Eigen::Vector3d euler = rot_matrix.eulerAngles(2,1,0);
+        // Computes translation vector
+        Eigen::VectorXd translation = link_transform.translation();
+        // Computes pose vector
+        Eigen::VectorXd pose(link_transform.translation().size() + euler.size());
+        pose << translation, euler;
+
+        return robot_dart::Utils::round_small(pose);
+    }
+
+    struct JointStateDesc : public robot_dart::descriptor::BaseDescriptor{
+        //--------------------------------------------------------------------------
+        // Descriptor used to record the joints states
+        //--------------------------------------------------------------------------
+        JointStateDesc(robot_dart::RobotDARTSimu& simu, size_t desc_dump = 1) :
+            robot_dart::descriptor::BaseDescriptor(simu, desc_dump) {}
+
+        void operator()(){
+            // Stores the joint positions
+            if (_simu.robots().size() > 0){
+                // Add current joints configuration to the joints_states vector
+                joints_states.push_back(_simu.robots()[0]->skeleton()->getPositions());
+
+            }
+        }
+
+        std::vector<Eigen::VectorXd> joints_states;
+    };
+
+    struct PoseStateDesc : public robot_dart::descriptor::BaseDescriptor{
+        //--------------------------------------------------------------------------
+        // Descriptor used to record end effector states
+        //--------------------------------------------------------------------------
+        PoseStateDesc(robot_dart::RobotDARTSimu& simu, size_t desc_dump = 1) :
+            robot_dart::descriptor::BaseDescriptor(simu, desc_dump) {}
+
+        void operator()(){
+            // Stores the end effector poses
+            if(_simu.robots().size() > 0){
+                // Get numJoints
+                double numJoints = _simu.robots()[0]->skeleton()->getNumBodyNodes();
+
+                // Add current end effector pose to the end_effector states vector
+                pose_states.push_back(compute_pose(_simu.robots()[0]->skeleton()->
+                    getBodyNode(numJoints - 1)->getWorldTransform()));
+            }
+        }
+
+        std::vector<Eigen::VectorXd> pose_states;
+    };
+
+    struct JointVelDesc : public robot_dart::descriptor::BaseDescriptor{
+        //--------------------------------------------------------------------------
+        // Descriptor used to record joint velocities 
+        //--------------------------------------------------------------------------
+        JointVelDesc(robot_dart::RobotDARTSimu& simu, size_t desc_dump = 1) :
+            robot_dart::descriptor::BaseDescriptor(simu, desc_dump) {}
+
+        void operator()(){
+            // Stores the joint positions
+            if (_simu.robots().size() > 0){
+                // Add current joints configuration to the joints_velocities vector
+                joints_velocities.push_back(_simu.robots()[0]->skeleton()->getVelocities());
+
+            }
+        }
+
+        std::vector<Eigen::VectorXd> joints_velocities;
+    };
+
     class SchunkArm{
     public:
         using robot_t = std::shared_ptr<robot_dart::Robot>;
         SchunkArm(std::string urdf_path,
-            std::vector<std::pair<std::string, std::string>> packages, std::string name,
-            double time_step) : _simu(std::make_shared<robot_dart::RobotDARTSimu>())
-            {
-                std::cout << "Testing class " << std::endl;
-                std::cout << "Name " << name << std::endl;
-                std::cout << "Time step "<< time_step << std::endl;
-            
-            // Load robot
+            std::vector<std::pair<std::string, std::string>> packages, std::string name) : _simu(std::make_shared<robot_dart::RobotDARTSimu>())
+        {
+            //--------------------------------------------------------------------------
+            // Initialize robot
+            //--------------------------------------------------------------------------
             _arm_robot = std::make_shared<robot_dart::Robot>(urdf_path, packages,name);
-
-            // Create Simulation 
-            // robot_dart::RobotDARTSimu simu(time_step);
-            // _simu->set_step(time_step);
 
             // Pin arm to the world
             _arm_robot->fix_to_world();
             _arm_robot->set_position_enforced(true);
-
-            // Load graphics
-            // #ifdef GRAPHIC
-            //     // Set graphics properties (world, resolution, shadows, real_time_node)
-            //     _simu->set_graphics(
-            //         std::make_shared<robot_dart::graphics::Graphics>(_simu->world(), 1920,1080,true,true));
-
-            //     // Set Camera position
-            //     std::static_pointer_cast<robot_dart::graphics::Graphics>(_simu->graphics())->
-            //         look_at({0.,3.,0.}, {0., 0., 0.5});
-
-            // #endif
 
             // Get DOFs of the robot
             _num_dofs = _arm_robot->skeleton()->getNumDofs();
@@ -70,18 +134,17 @@ namespace arm_dart{
                     mimic_joints++;
                 }
             }
-
             _num_ctrl_dofs = static_cast<int>(_num_dofs - mimic_joints);
-            std::cout << "Robot " << name << " has " << _num_ctrl_dofs << " DOFS " << std::endl;
 
-            // Adds collision detection
-            // _simu.world()->getConstraintSolver()->
-            //     setCollisionDetector(dart::collision::FCLCollisionDetector::create());
         }
+
         //==============================================================================
         void init_simu(double time_step){
+            //--------------------------------------------------------------------------
+            // Initialize Simulation
+            //--------------------------------------------------------------------------
             _simu->set_step(time_step);
-            std::cout << "Time step set to " << _simu->step() << std::endl;
+
             // Load graphics
             #ifdef GRAPHIC
                 // Set graphics properties (world, resolution, shadows, real_time_node)
@@ -94,12 +157,38 @@ namespace arm_dart{
 
             #endif
 
+            // Adds collision detection
+            _simu->world()->getConstraintSolver()->
+                setCollisionDetector(dart::collision::FCLCollisionDetector::create());
+
+            // Add robot to the simulation
+            _simu->add_robot(_arm_robot);
         }
+
+        //==============================================================================
+        void set_descriptors(std::vector<std::string> descriptors){
+            //--------------------------------------------------------------------------
+            // Add descriptors to the simulation
+            //--------------------------------------------------------------------------
+            for (const auto &descriptor: descriptors){
+                if (descriptor == "joint_states"){
+                    std::cout << "Adding joint states desc " << std::endl;
+                    _simu->add_descriptor(std::make_shared<JointStateDesc>(*_simu));
+                }else if (descriptor == "pose_states"){
+                    std::cout << "Adding pose states desc " << std::endl;
+                    _simu->add_descriptor(std::make_shared<PoseStateDesc>(*_simu));
+                }else if (descriptor == "velocity_states"){
+                    std::cout << "Adding velocity states desc " << std::endl;
+                    _simu->add_descriptor(std::make_shared<JointVelDesc>(*_simu));
+                }
+            }
+        }
+
         //==============================================================================
         void init_controller(std::string pid_file_path){
-            // Creates a PID controller extracting the paramters from a text file and 
-            // adds it to the arm_robot 
-
+            //--------------------------------------------------------------------------
+            // Initialize PID Controller
+            //--------------------------------------------------------------------------
             std::cout << "Initializing controller " << std::endl;
             // Initial arm configuration
             std::vector<double> ctrl(_num_ctrl_dofs, 0.0);
@@ -152,23 +241,30 @@ namespace arm_dart{
 
             std::cout << "PID Controller set" << std::endl; 
         }
+
         //==============================================================================
         void set_acceleration_limits(double acc_limit){
+            //--------------------------------------------------------------------------
+            // Set acceleration limits for the joints
+            //--------------------------------------------------------------------------
             Eigen::VectorXd acc_upper_limit = Eigen::VectorXd::Ones(_num_dofs) * acc_limit;
             Eigen::VectorXd acc_lower_limit = Eigen::VectorXd::Ones(_num_dofs) * - acc_limit;
             _arm_robot->skeleton()->setAccelerationUpperLimits(acc_upper_limit);
             _arm_robot->skeleton()->setAccelerationLowerLimits(acc_lower_limit);
         }
-        //==============================================================================
-        /*    
-        void run_sim(double max_duration = 5.0);
-Eigen::VectorXd compute_pose(Eigen::Isometry3d link_transform);
-double movement_duration(std::vector<Eigen::VectorXd> velocities, double time_step);
-        
-        double total_movement(Eigen::VectorXd init_conf, Eigen::VectorXd end_conf);
 
-        void display_run_results(robot_dart::RobotDARTSimu simu, double time_step, std::vector<double>& ctrl);
-    */
+        //==============================================================================
+        void display_robot_info(){
+            std::cout << "Arm: " << _arm_robot->name() << std::endl;
+            std::cout << "Number of DoF: " << _num_dofs << std::endl;
+            std::cout << "Number of controllable DoF: " << _num_ctrl_dofs << std::endl;
+            std::cout << "Acceleration lower " << _arm_robot -> skeleton() -> getAccelerationLowerLimits().transpose() << std::endl;
+            std::cout << "Acceleration higher " << _arm_robot -> skeleton() -> getAccelerationUpperLimits().transpose() << std::endl;
+            std::cout << "Velocity lower " << _arm_robot -> skeleton() -> getVelocityLowerLimits().transpose() << std::endl;
+            std::cout << "Velocity higher " << _arm_robot -> skeleton() -> getVelocityUpperLimits().transpose() << std::endl;
+            std::cout<<"-----------------------------------"<<std::endl;
+        }
+
     protected:
         robot_t _arm_robot;
         int _num_dofs;
