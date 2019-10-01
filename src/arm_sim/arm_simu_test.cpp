@@ -50,13 +50,13 @@ int main()
 
     // Run simulation
     double simulation_time = 10.;
-    arm_simu.run_simu(simulation_time/4);
+    // arm_simu.run_simu(simulation_time/4);
 
     // Reset states descriptors
-    arm_simu.reset_descriptors(descriptors);
+    // arm_simu.reset_descriptors(descriptors);
 
     std::vector<double> conf(arm_simu.get_control_dofs(), 0.0);
-    conf[1] = M_PI_2;
+    conf[1] = M_PI_4;
 
     arm_simu.set_goal_configuration(conf);
     arm_simu.run_simu(simulation_time);
