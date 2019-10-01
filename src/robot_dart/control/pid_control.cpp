@@ -22,11 +22,13 @@ namespace robot_dart {
             auto robot = _robot.lock();
             Eigen::VectorXd target_positions = Eigen::VectorXd::Map(_ctrl.data(), _ctrl.size());
 
-            Eigen::VectorXd current_positions = robot_dart::Utils::round_small(get_positions());
+            // Eigen::VectorXd current_positions = robot_dart::Utils::round_small(get_positions());
+            Eigen::VectorXd current_positions = get_positions();
             auto time_step = robot->skeleton()->getTimeStep();
             // Calculate error
-            Eigen::VectorXd error = robot_dart::Utils::round_small(
-                target_positions.array() - current_positions.array());
+            // Eigen::VectorXd error = robot_dart::Utils::round_small(
+            //     target_positions.array() - current_positions.array());
+            Eigen::VectorXd error = target_positions.array() - current_positions.array();
 
             // Compute proportional term
             Eigen::VectorXd Pout = _Kp.array() * error.array();
@@ -53,7 +55,8 @@ namespace robot_dart {
             _pre_error = error;
 
             // Compute torque Commands 
-            Eigen::VectorXd commands = robot_dart::Utils::round_small(Pout + Iout + Dout);
+            Eigen::VectorXd commands = Pout + Iout + Dout;
+            // Eigen::VectorXd commands = robot_dart::Utils::round_small(Pout + Iout + Dout);
 
             // Testing out rounding the commands to see if that eliminates undesired movements
             
