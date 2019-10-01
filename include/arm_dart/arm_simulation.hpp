@@ -48,6 +48,23 @@ namespace arm_dart{
         return robot_dart::Utils::round_small(pose);
     }
 
+    bool position_achieved(std::vector<Eigen::VectorXd> joints_positions){
+        //--------------------------------------------------------------------------
+        // Check whether the joints positions have stabilised up to a desired limit 
+        // and with a certain threshold
+        //--------------------------------------------------------------------------
+        double threshold = 1e-3;
+        size_t checking_limit = 10.;
+
+        // Iterate backwards and compare a pair of joints positions
+        for (size_t i = 0; i < checking_limit; i++){
+            if (!joints_positions.rbegin()[i].isApprox(joints_positions.rbegin()[i+1], threshold))
+                return false;
+        }
+
+        return true;
+    }
+
     struct JointStateDesc : public robot_dart::descriptor::BaseDescriptor{
         //--------------------------------------------------------------------------
         // Descriptor used to record the joints states
@@ -60,6 +77,12 @@ namespace arm_dart{
             if (_simu.robots().size() > 0){
                 // Add current joints configuration to the joints_states vector
                 joints_states.push_back(_simu.robots()[0]->skeleton()->getPositions());
+                if (joints_states.size() > 4){
+                    if (position_achieved(joints_states)){
+                        std::cout << "Stopping simulation!!!! " << std::endl;
+                        _simu.stop_sim();
+                    }
+                }
 
             }
         }
@@ -246,14 +269,23 @@ namespace arm_dart{
             // Collect recorded velocities
             std::vector<Eigen::VectorXd> velocities = 
                 std::static_pointer_cast<JointVelDesc>(_simu->descriptor(2))->joints_velocities;
-            // backup(velocities, "text", "velocities.txt");
+            backup(velocities, "text", "velocities.txt");
 
             // Computes movement duration
-            double duration = movement_duration(velocities, _simu->step());
-            std::cout << "Arm stoped at " << duration << " seconds " << std::endl;
+            std::cout << "Arm stoped at " << poses.size()*_simu->step() << " seconds " << std::endl;
             
         }
 
+        //==============================================================================
+        void backup(const std::vector<Eigen::VectorXd> v, std::string file_type, std::string file_name) {
+            if (file_type == "text"){
+                std::ofstream out_file(file_name);
+                for (const auto &element : v){
+                    out_file << element.transpose() << "\n";
+                }
+            }
+
+        }
         //==============================================================================
         double movement_duration(std::vector<Eigen::VectorXd> velocities, double timestep){
             //--------------------------------------------------------------------------
