@@ -272,7 +272,7 @@ namespace arm_dart{
             backup(velocities, "text", "velocities.txt");
 
             // Computes movement duration
-            std::cout << "Arm stoped at " << poses.size()*_simu->step() << " seconds " << std::endl;
+            std::cout << "Arm stoped at " << poses.size() << " time steps " << std::endl;
             
         }
 
