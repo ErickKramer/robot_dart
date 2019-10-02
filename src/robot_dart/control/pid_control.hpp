@@ -24,6 +24,11 @@ namespace robot_dart {
             std::tuple<Eigen::VectorXd, Eigen::VectorXd, Eigen::VectorXd> pid() const;
 
             std::shared_ptr<RobotControl> clone() const override;
+
+            void reset_total_torque();
+
+            double get_total_torque();
+
         protected:
             Eigen::VectorXd _Kp;
             Eigen::VectorXd _Ki;
@@ -32,6 +37,7 @@ namespace robot_dart {
             Eigen::VectorXd _integral;
             double _i_min;
             double _i_max;
+            double _total_torque;
         };
     } // namespace control
 } // namespace robot_dart

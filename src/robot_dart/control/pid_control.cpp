@@ -4,9 +4,12 @@
 
 namespace robot_dart {
     namespace control {
-        PIDControl::PIDControl() : RobotControl() {}
-        PIDControl::PIDControl(const std::vector<double>& ctrl, bool full_control) : RobotControl(ctrl, full_control) {}
+        PIDControl::PIDControl() : RobotControl(), _total_torque(0.){}
+        
+        //==============================================================================
+        PIDControl::PIDControl(const std::vector<double>& ctrl, bool full_control) : RobotControl(ctrl, full_control), _total_torque(0.){}
 
+        //==============================================================================
         void PIDControl::configure()
         {
             if (_ctrl.size() == _control_dof)
@@ -16,8 +19,13 @@ namespace robot_dart {
                 set_pid(10., 0., 0.1, -1, 1);
         }
 
+        //==============================================================================
         Eigen::VectorXd PIDControl::calculate(double)
         {
+            //--------------------------------------------------------------------------
+            // Computes the torque commands to move the arm to the target position
+            //--------------------------------------------------------------------------
+
             ROBOT_DART_ASSERT(_control_dof == _ctrl.size(), "PIDControl: Controller parameters size is not the same as DOFs of the robot", Eigen::VectorXd::Zero(_control_dof));
             auto robot = _robot.lock();
             Eigen::VectorXd target_positions = Eigen::VectorXd::Map(_ctrl.data(), _ctrl.size());
@@ -56,6 +64,10 @@ namespace robot_dart {
 
             // Compute torque Commands 
             Eigen::VectorXd commands = Pout + Iout + Dout;
+
+            // Accumulate torque
+            _total_torque += commands.sum();
+
             // Eigen::VectorXd commands = robot_dart::Utils::round_small(Pout + Iout + Dout);
 
             // Testing out rounding the commands to see if that eliminates undesired movements
@@ -82,8 +94,13 @@ namespace robot_dart {
             return commands;
         }
 
+        //==============================================================================
         void PIDControl::set_pid(double Kp, double Ki, double Kd, double i_min, double i_max)
         {
+            //--------------------------------------------------------------------------
+            // Set PID gains to a single value and the Ki limits
+            //--------------------------------------------------------------------------
+
             ROBOT_DART_WARNING(_control_dof != 1, "PIDControl: Setting all the gains to Kp = " << Kp << " Ki = " << Ki << " Kd = " << Kd);
             _Kp = Eigen::VectorXd::Constant(_control_dof, Kp);
             _Ki = Eigen::VectorXd::Constant(_control_dof, Ki);
@@ -94,8 +111,13 @@ namespace robot_dart {
             _i_max = i_max;
         }
 
+        //==============================================================================
         void PIDControl::set_pid(const Eigen::VectorXd& Kp, const Eigen::VectorXd& Ki, const Eigen::VectorXd& Kd, double i_min, double i_max)
         {
+            //--------------------------------------------------------------------------
+            // Set PID gains to a vector of values and the Ki limits
+            //--------------------------------------------------------------------------
+
             ROBOT_DART_ASSERT(static_cast<size_t>(Kp.size()) == _control_dof, "PIDControl: The Kp size is not the same as the DOFs!", );
             ROBOT_DART_ASSERT(static_cast<size_t>(Ki.size()) == _control_dof, "PIDControl: The Kp size is not the same as the DOFs!", );
             ROBOT_DART_ASSERT(static_cast<size_t>(Kd.size()) == _control_dof, "PIDControl: The Kd size is not the same as the DOFs!", );
@@ -108,6 +130,7 @@ namespace robot_dart {
             _i_max = i_max;
         }
 
+        //==============================================================================
         std::tuple<Eigen::VectorXd, Eigen::VectorXd, Eigen::VectorXd> PIDControl::pid() const
         {
             return std::make_tuple(_Kp, _Ki, _Kd);
@@ -116,6 +139,19 @@ namespace robot_dart {
         std::shared_ptr<RobotControl> PIDControl::clone() const
         {
             return std::make_shared<PIDControl>(*this);
+        }
+
+        // //==============================================================================
+        void PIDControl::reset_total_torque(){
+            //--------------------------------------------------------------------------
+            // Resets the total torque accumulator
+            //--------------------------------------------------------------------------
+            _total_torque = 0.;
+        }
+
+        //==============================================================================
+        double PIDControl::get_total_torque(){
+            return _total_torque;
         }
     } // namespace control
 } // namespace robot_dart

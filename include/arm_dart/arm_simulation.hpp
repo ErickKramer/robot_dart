@@ -48,6 +48,7 @@ namespace arm_dart{
         return robot_dart::Utils::round_small(pose);
     }
 
+    //==============================================================================
     bool position_achieved(std::vector<Eigen::VectorXd> joints_positions){
         //--------------------------------------------------------------------------
         // Check whether the joints positions have stabilised up to a desired limit 
@@ -65,6 +66,7 @@ namespace arm_dart{
         return true;
     }
 
+    //==============================================================================
     struct JointStateDesc : public robot_dart::descriptor::BaseDescriptor{
         //--------------------------------------------------------------------------
         // Descriptor used to record the joints states
@@ -90,6 +92,7 @@ namespace arm_dart{
         std::vector<Eigen::VectorXd> joints_states;
     };
 
+    //==============================================================================
     struct PoseStateDesc : public robot_dart::descriptor::BaseDescriptor{
         //--------------------------------------------------------------------------
         // Descriptor used to record end effector states
@@ -112,6 +115,7 @@ namespace arm_dart{
         std::vector<Eigen::VectorXd> pose_states;
     };
 
+    //==============================================================================
     struct JointVelDesc : public robot_dart::descriptor::BaseDescriptor{
         //--------------------------------------------------------------------------
         // Descriptor used to record joint velocities 
@@ -131,6 +135,7 @@ namespace arm_dart{
         std::vector<Eigen::VectorXd> joints_velocities;
     };
 
+    //==============================================================================
     class SchunkArm{
     public:
         using robot_t = std::shared_ptr<robot_dart::Robot>;
@@ -265,6 +270,11 @@ namespace arm_dart{
             std::cout << "Pose of the end effector \n " << poses.back().transpose() << std::endl;
 
             std::cout << "Total arm movement " << total_movement(initial_configuration, end_configuration) << std::endl;
+            
+            std::cout << "Total torque " << std::static_pointer_cast<robot_dart::control::PIDControl>(_arm_robot->controllers()[0])
+                ->get_total_torque() << std::endl;
+
+
 
             // Collect recorded velocities
             std::vector<Eigen::VectorXd> velocities = 
@@ -374,7 +384,7 @@ namespace arm_dart{
 
             // Set PID gains
             std::static_pointer_cast<robot_dart::control::PIDControl>(_arm_robot->controllers()[0])
-            ->set_pid(Kp, Ki, Kd, i_min, i_max);
+                ->set_pid(Kp, Ki, Kd, i_min, i_max);
 
             std::cout << "PID Controller set" << std::endl; 
             _ctrl = ctrl;
