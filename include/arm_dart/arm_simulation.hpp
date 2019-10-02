@@ -81,7 +81,6 @@ namespace arm_dart{
                 joints_states.push_back(_simu.robots()[0]->skeleton()->getPositions());
                 if (joints_states.size() > 4){
                     if (position_achieved(joints_states)){
-                        std::cout << "Stopping simulation!!!! " << std::endl;
                         _simu.stop_sim();
                     }
                 }
@@ -245,54 +244,24 @@ namespace arm_dart{
             _simu->run(simulation_time);
             
             //--------------------------------------------------------------------------
-            // Display simulation results
+            // Record simulation data
             //--------------------------------------------------------------------------
-            std::cout << "Number of joints_states recorded " <<
-                std::static_pointer_cast<JointStateDesc>(_simu->descriptor(0))->joints_states.size() << std::endl;
-            
-            std::vector<Eigen::VectorXd> poses = 
-                std::static_pointer_cast<PoseStateDesc>(_simu->descriptor(1))->pose_states;
-            std::cout << "Number of pose_states recorded " << poses.size() << std::endl;
-    
-            Eigen::VectorXd initial_configuration = robot_dart::Utils::round_small(
-                std::static_pointer_cast<JointStateDesc>(_simu->descriptor(0))->joints_states.front()); 
-            std::cout << "Initial joints configuration \n" << initial_configuration.transpose() << std::endl;
-
+            // Record total movement
             Eigen::VectorXd end_configuration = robot_dart::Utils::round_small(
                 std::static_pointer_cast<JointStateDesc>(_simu->descriptor(0))->joints_states.back()); 
-            std::cout << "Final joints configuration \n" << end_configuration.transpose() << std::endl;
-   
-            Eigen::VectorXd target_positions = Eigen::VectorXd::Map(_ctrl.data(), _ctrl.size());
+            _total_joints_motion = total_movement(Eigen::VectorXd::Zero(end_configuration.size()), end_configuration);
 
-            // In the case that a joint is mimic (e.g. gripper fingers)
-            if (target_positions.size() < end_configuration.size()){
-                // Resize the target_positions vector used to control the robot to match the joints configuration vector
-                target_positions.conservativeResize(end_configuration.size());
-                // Copy the target position value of the last joint controlled to the mimic joint position
-                target_positions[end_configuration.size()-1] = target_positions[end_configuration.size()-2];
-            } 
+            // Record total torque
+            _total_torque = std::static_pointer_cast<robot_dart::control::PIDControl>(_arm_robot->controllers()[0])
+                ->get_total_torque(); 
 
-            std::cout << "Joint angles requested " << target_positions.transpose() << std::endl;
-    
-            std::cout << "Error for the arm configuration \n" << (target_positions - end_configuration).transpose() << std::endl;
+            // Record end_effector pose 
+            std::vector<Eigen::VectorXd> poses = 
+                std::static_pointer_cast<PoseStateDesc>(_simu->descriptor(1))->pose_states;
+            _end_effector_pose = poses.back();
 
-            std::cout << "Pose of the end effector \n " << poses.back().transpose() << std::endl;
-
-            std::cout << "Total arm movement " << total_movement(initial_configuration, end_configuration) << std::endl;
-            
-            std::cout << "Total torque " << std::static_pointer_cast<robot_dart::control::PIDControl>(_arm_robot->controllers()[0])
-                ->get_total_torque() << std::endl;
-
-
-
-            // Collect recorded velocities
-            std::vector<Eigen::VectorXd> velocities = 
-                std::static_pointer_cast<JointVelDesc>(_simu->descriptor(2))->joints_velocities;
-            backup(velocities, "text", "velocities.txt");
-
-            // Computes movement duration
-            std::cout << "Arm stoped at " << poses.size() << " time steps " << std::endl;
-            
+            // Record simulation duration
+            _total_steps = poses.size();
         }
 
         //==============================================================================
@@ -415,10 +384,12 @@ namespace arm_dart{
             std::cout << "Arm: " << _arm_robot->name() << std::endl;
             std::cout << "Number of DoF: " << _num_dofs << std::endl;
             std::cout << "Number of controllable DoF: " << _num_ctrl_dofs << std::endl;
-            std::cout << "Acceleration lower " << _arm_robot -> skeleton() -> getAccelerationLowerLimits().transpose() << std::endl;
-            std::cout << "Acceleration higher " << _arm_robot -> skeleton() -> getAccelerationUpperLimits().transpose() << std::endl;
-            std::cout << "Velocity lower " << _arm_robot -> skeleton() -> getVelocityLowerLimits().transpose() << std::endl;
-            std::cout << "Velocity higher " << _arm_robot -> skeleton() -> getVelocityUpperLimits().transpose() << std::endl;
+            std::cout << "Acceleration lower limit " << _arm_robot->skeleton()->getAccelerationLowerLimits().transpose() << std::endl;
+            std::cout << "Acceleration upper limit " << _arm_robot->skeleton()->getAccelerationUpperLimits().transpose() << std::endl;
+            std::cout << "Velocity lower limit " << _arm_robot->skeleton()->getVelocityLowerLimits().transpose() << std::endl;
+            std::cout << "Velocity upper limit " << _arm_robot->skeleton()->getVelocityUpperLimits().transpose() << std::endl;
+            std::cout << "Position lower limit " << get_positions_lower_limits().transpose()<< std::endl;
+            std::cout << "Position upper limit " << get_positions_upper_limits().transpose()<< std::endl;
             std::cout<<"-----------------------------------"<<std::endl;
         }
         
@@ -441,12 +412,46 @@ namespace arm_dart{
             _arm_robot.reset();
         }
 
+        //==============================================================================
+        Eigen::VectorXd get_positions_upper_limits(){
+            return _arm_robot->skeleton()->getPositionUpperLimits();
+        }
+        
+        //==============================================================================
+        Eigen::VectorXd get_positions_lower_limits(){
+            return _arm_robot->skeleton()->getPositionLowerLimits();
+        }
+
+        //==============================================================================
+        double get_total_joints_motion(){
+            return _total_joints_motion;
+        }
+        
+        //==============================================================================
+        double get_total_torque(){
+            return _total_torque;
+        }
+        
+        //==============================================================================
+        Eigen::VectorXd get_final_pose(){
+            return _end_effector_pose;
+        }
+
+        //==============================================================================
+        double get_total_steps(){
+            return _total_steps;
+        }
+
     protected:
         robot_t _arm_robot;
         int _num_dofs;
         int _num_ctrl_dofs;
         robot_dart::RobotDARTSimuPtr _simu;
         std::vector<double> _ctrl;
+        double _total_joints_motion;
+        double _total_torque;
+        Eigen::VectorXd _end_effector_pose;
+        double _total_steps;
 
 
 

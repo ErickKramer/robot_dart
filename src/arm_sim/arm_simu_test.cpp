@@ -60,6 +60,19 @@ int main()
 
     arm_simu.set_goal_configuration(conf);
     arm_simu.run_simu(simulation_time);
+
+    //--------------------------------------------------------------------------
+    // Display simulation results
+    //--------------------------------------------------------------------------
+    std::cout << "Pose of the end effector \n " << arm_simu.get_final_pose().transpose() << std::endl;
+
+    std::cout << "Total arm movement " << arm_simu.get_total_joints_motion()<< std::endl;
+    
+    std::cout << "Total torque " << arm_simu.get_total_torque()<< std::endl;
+    
+    std::cout << "Number of time steps required to reach target configuration " 
+        << arm_simu.get_total_steps() << std::endl;
+
     arm_simu.reset_descriptors(descriptors);
     arm_simu.reset_configuration();
 
@@ -67,6 +80,14 @@ int main()
 
     arm_simu.set_goal_configuration(conf);
     arm_simu.run_simu(simulation_time);
+    std::cout << "Pose of the end effector \n " << arm_simu.get_final_pose().transpose() << std::endl;
+
+    std::cout << "Total arm movement " << arm_simu.get_total_joints_motion()<< std::endl;
+    
+    std::cout << "Total torque " << arm_simu.get_total_torque()<< std::endl;
+    
+    std::cout << "Number of time steps required to reach target configuration " 
+        << arm_simu.get_total_steps() << std::endl;
     arm_simu.reset_descriptors(descriptors);
 
     arm_simu.reset_robot();
