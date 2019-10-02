@@ -367,6 +367,8 @@ int main(){
     std::cout << "Acceleration higher " << arm_robot -> skeleton() -> getAccelerationUpperLimits().transpose() << std::endl;
     std::cout << "Velocity lower " << arm_robot -> skeleton() -> getVelocityLowerLimits().transpose() << std::endl;
     std::cout << "Velocity higher " << arm_robot -> skeleton() -> getVelocityUpperLimits().transpose() << std::endl;
+    std::cout << "Position upper lim " << arm_robot -> skeleton() -> getPositionUpperLimits().transpose() << std::endl;
+    std::cout << "Position lower lim " << arm_robot -> skeleton() -> getPositionLowerLimits().transpose() << std::endl;
     std::cout<<"-----------------------------------"<<std::endl;
 
     std::cout << "Initial joint angles requested" << std::endl;
