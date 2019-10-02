@@ -145,7 +145,8 @@ namespace arm_dart{
             //--------------------------------------------------------------------------
             // Initialize robot
             //--------------------------------------------------------------------------
-            _arm_robot = std::make_shared<robot_dart::Robot>(urdf_path, packages,name);
+            auto robot = std::make_shared<robot_dart::Robot>(urdf_path, packages,name); 
+            _arm_robot = robot->clone(); 
 
             // Pin arm to the world
             _arm_robot->fix_to_world();
@@ -226,6 +227,14 @@ namespace arm_dart{
                     std::static_pointer_cast<JointVelDesc>(_simu->descriptor(2))->joints_velocities.clear();
                 }
             }
+        }
+
+        //==============================================================================
+        void reset_configuration(){
+            //--------------------------------------------------------------------------
+            // Set arm to its initial configuration
+            //--------------------------------------------------------------------------
+            _simu->robots()[0]->skeleton()->setPositions(Eigen::VectorXd::Zero(_num_dofs));
         }
 
         //==============================================================================

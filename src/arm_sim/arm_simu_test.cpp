@@ -61,6 +61,13 @@ int main()
     arm_simu.set_goal_configuration(conf);
     arm_simu.run_simu(simulation_time);
     arm_simu.reset_descriptors(descriptors);
+    arm_simu.reset_configuration();
+
+    conf[1] = -M_PI_4;
+
+    arm_simu.set_goal_configuration(conf);
+    arm_simu.run_simu(simulation_time);
+    arm_simu.reset_descriptors(descriptors);
 
     arm_simu.reset_robot();
     return 0;
