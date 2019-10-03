@@ -102,12 +102,10 @@ namespace arm_dart{
         void operator()(){
             // Stores the end effector poses
             if(_simu.robots().size() > 0){
-                // Get numJoints
-                double numJoints = _simu.robots()[0]->skeleton()->getNumBodyNodes();
 
                 // Add current end effector pose to the end_effector states vector
                 pose_states.push_back(compute_pose(_simu.robots()[0]->skeleton()->
-                    getBodyNode(numJoints - 1)->getWorldTransform()));
+                    getBodyNode("pg70_palm_link")->getWorldTransform()));
             }
         }
 
@@ -191,6 +189,7 @@ namespace arm_dart{
 
             // Add robot to the simulation
             _simu->add_robot(_arm_robot);
+
         }
 
         //==============================================================================
@@ -390,6 +389,7 @@ namespace arm_dart{
             std::cout << "Velocity upper limit " << _arm_robot->skeleton()->getVelocityUpperLimits().transpose() << std::endl;
             std::cout << "Position lower limit " << get_positions_lower_limits().transpose()<< std::endl;
             std::cout << "Position upper limit " << get_positions_upper_limits().transpose()<< std::endl;
+            // std::cout << "End effector name " << _arm_robot->skeleton()->getBodyNode("pg70_finger_left_link")->getName() << std::endl;
             std::cout<<"-----------------------------------"<<std::endl;
         }
         
