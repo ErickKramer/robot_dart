@@ -162,6 +162,9 @@ namespace arm_dart{
             }
             _num_ctrl_dofs = static_cast<int>(_num_dofs - mimic_joints);
 
+            // Initialize total_length
+            _arm_total_length = 1.1814; // m
+
         }
 
         //==============================================================================
@@ -441,6 +444,11 @@ namespace arm_dart{
         double get_total_steps(){
             return _total_steps;
         }
+        
+        //==============================================================================
+        double get_total_length(){
+            return _arm_total_length;
+        }
 
     protected:
         robot_t _arm_robot;
@@ -452,6 +460,7 @@ namespace arm_dart{
         double _total_torque;
         Eigen::VectorXd _end_effector_pose;
         double _total_steps;
+        double _arm_total_length;
 
 
 
