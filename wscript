@@ -191,7 +191,7 @@ def build(bld):
                       use = 'RobotDARTSimu',
                       defines = ['GRAPHIC', 'RESPATH="' + path + '"'],
                       target = 'simpleArmSchunk')
-        
+
         bld.program(features = 'cxx',
                       install_path = None,
                       source = 'src/arm_sim/arm_simu_test.cpp',

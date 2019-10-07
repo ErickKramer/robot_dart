@@ -5,6 +5,7 @@
 #include <iostream>
 #include <algorithm>
 #include <cstdlib>
+#include <typeinfo>
 
 // robot_dart lib
 #include <robot_dart/robot.hpp>
@@ -183,6 +184,8 @@ namespace arm_dart{
                 // Set Camera position
                 std::static_pointer_cast<robot_dart::graphics::Graphics>(_simu->graphics())->
                     look_at({0.,3.,0.}, {0., 0., 0.5});
+                
+                std::cout << "Inside GRAPHIC " << std::endl;
 
             #endif
 
@@ -192,6 +195,7 @@ namespace arm_dart{
 
             // Add robot to the simulation
             _simu->add_robot(_arm_robot);
+            std::cout << "Simulation initialized " << std::endl;
 
         }
 
@@ -342,26 +346,29 @@ namespace arm_dart{
                     for (size_t i = 1; i < params.size(); i++){
                         Kp[i-1] = atof(params[i].c_str());
                     }
-                    std::cout << "Kp " << Kp.transpose() << std::endl;
                 }else if (params[0] == "I"){
                     for (size_t i = 1; i < params.size(); i++){
                         Ki[i-1] = atof(params[i].c_str());
                     }
-                    std::cout << "Ki " << Ki.transpose() << std::endl;
                 }else if (params[0] == "D"){
                     for (size_t i = 1; i < params.size(); i++){
                         Kd[i-1] = atof(params[i].c_str());
                     }
-                    std::cout << "Kd " << Kd.transpose() << std::endl;
                 }else if (params[0] == "i_limits"){
                     i_min = atof(params[1].c_str());
                     i_max = atof(params[2].c_str());
-                    std::cout << "i limits " << i_min << " " << i_max << std::endl;
                 }
 
             }
             pid_file.close();
 
+            std::cout << "* Setting PID controller " << std::endl;
+            std::cout << "Kp " << Kp.transpose() << std::endl;
+            std::cout << "Ki " << Ki.transpose() << std::endl;
+            std::cout << "Kd " << Kd.transpose() << std::endl;
+            std::cout << "i limits " << i_min << " " << i_max << std::endl;
+
+            std::cout << "Type var " << typeid(Kp).name() << std::endl;
             // Set PID gains
             std::static_pointer_cast<robot_dart::control::PIDControl>(_arm_robot->controllers()[0])
                 ->set_pid(Kp, Ki, Kd, i_min, i_max);

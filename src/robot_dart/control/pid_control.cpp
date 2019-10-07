@@ -1,6 +1,7 @@
 #include "pid_control.hpp"
 #include "robot_dart/robot.hpp"
 #include "robot_dart/utils.hpp"
+#include <typeinfo>
 
 namespace robot_dart {
     namespace control {
@@ -118,16 +119,37 @@ namespace robot_dart {
             // Set PID gains to a vector of values and the Ki limits
             //--------------------------------------------------------------------------
 
+            std::cout << "Inside PID: Setting pid params " << std::endl;
+
             ROBOT_DART_ASSERT(static_cast<size_t>(Kp.size()) == _control_dof, "PIDControl: The Kp size is not the same as the DOFs!", );
             ROBOT_DART_ASSERT(static_cast<size_t>(Ki.size()) == _control_dof, "PIDControl: The Kp size is not the same as the DOFs!", );
             ROBOT_DART_ASSERT(static_cast<size_t>(Kd.size()) == _control_dof, "PIDControl: The Kd size is not the same as the DOFs!", );
-            _Kp = Kp;
+
+            std::cout << "** Assert passed successfully **" << std::endl;
+            // std::cout << "Inside PID: " <<Kp.size() << std::endl;
+            // std::cout << "Inside PID: i_min " <<i_min << std::endl;
+            // std::cout << "Inside PID: i_max " <<i_max << std::endl;
+            // std::cout << "Inside PID: KP " << Kp << std::endl;
+            // std::cout << "Inside PID: KI " << Ki.transpose() << std::endl;
+            // std::cout << "Inside PID: Kd[1] " << Kd[1] << std::endl;
+            // std::cout << "Inside PID: Kd " << Kd.transpose() << std::endl;
+            // std::cout << "Inside PID: Var type " << typeid(Kp).name() << std::endl;
+
             _Ki = Ki;
+            std::cout << "I set " << std::endl;
+            _Kp = Kp;
+            std::cout << "P set " << std::endl;
             _Kd = Kd;
+            std::cout << "D set " << std::endl;
             _pre_error = Eigen::VectorXd::Zero(_control_dof);
+            std::cout << "pre_error set " << std::endl;
             _integral = Eigen::VectorXd::Zero(_control_dof);
+            std::cout << "_integral set " << std::endl;
             _i_min = i_min;
+            std::cout << "i_min set " << std::endl;
             _i_max = i_max;
+            std::cout << "i_max set " << std::endl;
+            std::cout << "Inside PID: Parameters set" << std::endl;
         }
 
         //==============================================================================

@@ -19,7 +19,7 @@ namespace robot_dart {
             Eigen::VectorXd calculate(double) override;
 
             void set_pid(double p, double i, double d, double i_min, double i_max);
-            void set_pid(const Eigen::VectorXd& p, const Eigen::VectorXd& i, const Eigen::VectorXd& d, double i_min, double i_max);
+            void set_pid(const Eigen::VectorXd& Kp, const Eigen::VectorXd& Ki, const Eigen::VectorXd& Kd, double i_min, double i_max);
 
             std::tuple<Eigen::VectorXd, Eigen::VectorXd, Eigen::VectorXd> pid() const;
 
