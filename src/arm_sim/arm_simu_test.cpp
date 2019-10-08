@@ -6,7 +6,6 @@
 
 int main()
 {
-
     // Get Working directory
     char cCurrentPath[FILENAME_MAX];
     if (!GetCurrentDir(cCurrentPath, sizeof(cCurrentPath))){
