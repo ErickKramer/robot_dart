@@ -26,8 +26,10 @@ int main()
     std::string name = "schunk arm";
     double time_step = 0.001;
 
+    std::string end_effector_name = "end_virtual_link";
+
     // Instance of SchunkArm class
-    arm_dart::SchunkArm arm_simu(urdf_path, packages,name);
+    arm_dart::SchunkArm arm_simu(urdf_path, packages,name, end_effector_name);
 
     // Initialize simulation
     arm_simu.init_simu(time_step);
