@@ -28,6 +28,10 @@
 
 namespace arm_dart{
 
+    namespace global{
+        std::string end_effector_name;
+    }
+
     Eigen::VectorXd compute_pose(Eigen::Isometry3d link_transform){
         //--------------------------------------------------------------------------
         // Computes end_effector pose 
@@ -105,8 +109,10 @@ namespace arm_dart{
             if(_simu.robots().size() > 0){
 
                 // Add current end effector pose to the end_effector states vector
+                // pose_states.push_back(compute_pose(_simu.robots()[0]->skeleton()->
+                    // getBodyNode("pg70_palm_link")->getWorldTransform()));
                 pose_states.push_back(compute_pose(_simu.robots()[0]->skeleton()->
-                    getBodyNode("pg70_palm_link")->getWorldTransform()));
+                    getBodyNode(global::end_effector_name)->getWorldTransform()));
             }
         }
 
@@ -142,7 +148,8 @@ namespace arm_dart{
         Eigen::VectorXd Kd;
 
         SchunkArm(std::string urdf_path,
-            std::vector<std::pair<std::string, std::string>> packages, std::string name) : _simu(std::make_shared<robot_dart::RobotDARTSimu>())
+            std::vector<std::pair<std::string, std::string>> packages, std::string name,
+            std::string end_effector_name) : _simu(std::make_shared<robot_dart::RobotDARTSimu>())
         {
             //--------------------------------------------------------------------------
             // Initialize robot
@@ -181,6 +188,9 @@ namespace arm_dart{
 
             // Clone robot
             _arm_robot = robot->clone(); 
+
+            // Assign end_effector_name to track end_effector poses
+            global::end_effector_name = end_effector_name;
         }
 
         ~SchunkArm() {}
@@ -387,6 +397,7 @@ namespace arm_dart{
 
         //==============================================================================
         void display_robot_info(){
+            std::cout<<"-----------------------------------"<<std::endl;
             std::cout << "Arm: " << _arm_robot->name() << std::endl;
             std::cout << "Number of DoF: " << _num_dofs << std::endl;
             std::cout << "Number of controllable DoF: " << _num_ctrl_dofs << std::endl;
@@ -396,7 +407,7 @@ namespace arm_dart{
             std::cout << "Velocity upper limit " << _arm_robot->skeleton()->getVelocityUpperLimits().transpose() << std::endl;
             std::cout << "Position lower limit " << get_positions_lower_limits().transpose()<< std::endl;
             std::cout << "Position upper limit " << get_positions_upper_limits().transpose()<< std::endl;
-            // std::cout << "End effector name " << _arm_robot->skeleton()->getBodyNode("pg70_finger_left_link")->getName() << std::endl;
+            std::cout << "End effector name " << global::end_effector_name<< std::endl;
             std::cout<<"-----------------------------------"<<std::endl;
         }
         
