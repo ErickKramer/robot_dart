@@ -397,18 +397,18 @@ namespace arm_dart{
 
         //==============================================================================
         void display_robot_info(){
-            std::cout<<"-----------------------------------"<<std::endl;
-            std::cout << "Arm: " << _arm_robot->name() << std::endl;
-            std::cout << "Number of DoF: " << _num_dofs << std::endl;
-            std::cout << "Number of controllable DoF: " << _num_ctrl_dofs << std::endl;
-            std::cout << "Acceleration lower limit " << _arm_robot->skeleton()->getAccelerationLowerLimits().transpose() << std::endl;
-            std::cout << "Acceleration upper limit " << _arm_robot->skeleton()->getAccelerationUpperLimits().transpose() << std::endl;
-            std::cout << "Velocity lower limit " << _arm_robot->skeleton()->getVelocityLowerLimits().transpose() << std::endl;
-            std::cout << "Velocity upper limit " << _arm_robot->skeleton()->getVelocityUpperLimits().transpose() << std::endl;
-            std::cout << "Position lower limit " << get_positions_lower_limits().transpose()<< std::endl;
-            std::cout << "Position upper limit " << get_positions_upper_limits().transpose()<< std::endl;
-            std::cout << "End effector name " << global::end_effector_name<< std::endl;
-            std::cout<<"-----------------------------------"<<std::endl;
+            std::cout<<"\033[1;31m-----------------------------------\033[0m"<<std::endl;
+            std::cout << "\033[1;31m Arm: \033[0m" << _arm_robot->name() << std::endl;
+            std::cout << "\033[1;31m Number of DoF: \033[0m" << _num_dofs << std::endl;
+            std::cout << "\033[1;31m Number of controllable DoF: \033[0m" << _num_ctrl_dofs << std::endl;
+            std::cout << "\033[1;31m Acceleration lower limit: \033[0m" << _arm_robot->skeleton()->getAccelerationLowerLimits().transpose() << std::endl;
+            std::cout << "\033[1;31m Acceleration upper limit: \033[0m" << _arm_robot->skeleton()->getAccelerationUpperLimits().transpose() << std::endl;
+            std::cout << "\033[1;31m Velocity lower limit: \033[0m" << _arm_robot->skeleton()->getVelocityLowerLimits().transpose() << std::endl;
+            std::cout << "\033[1;31m Velocity upper limit: \033[0m" << _arm_robot->skeleton()->getVelocityUpperLimits().transpose() << std::endl;
+            std::cout << "\033[1;31m Position lower limit: \033[0m" << get_positions_lower_limits().transpose()<< std::endl;
+            std::cout << "\033[1;31m Position upper limit: \033[0m" << get_positions_upper_limits().transpose()<< std::endl;
+            std::cout << "\033[1;31m End effector name: \033[0m" << global::end_effector_name<< std::endl;
+            std::cout<<"\033[1;31m-----------------------------------\033[0m"<<std::endl;
         }
         
         //==============================================================================
