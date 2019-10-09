@@ -372,7 +372,7 @@
     <child link="pg70_finger_left_link"/>
     <axis xyz="0 1 0"/>
     <!-- Based on Fetch gripper -->
-    <limit effort="60" lower="0.0" upper="0.05" velocity="0.05" /><dynamics damping="100.0" />
+    <limit effort="60" lower="0.0" upper="0.05" velocity="0.03" /><dynamics damping="100.0" />
   </joint>
   <link name="pg70_finger_left_link">
     <inertial>
@@ -404,7 +404,7 @@
     <axis xyz="0 -1 0"/>
     <mimic joint="pg70_finger_left_joint" multiplier="1" offset="0"/>
     <!-- Based on Fetch gripper -->
-    <limit effort="60" lower="0.0" upper="0.05" velocity="0.05" /><dynamics damping="100.0" />
+    <limit effort="60" lower="0.0" upper="0.05" velocity="0.03" /><dynamics damping="100.0" />
     <!-- <limit effort="10" lower="-0.001" upper="0.0301" velocity="0.041"/> -->
   </joint>
   <link name="pg70_finger_right_link">
