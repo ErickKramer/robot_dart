@@ -212,7 +212,7 @@ namespace arm_dart{
                 std::static_pointer_cast<robot_dart::graphics::Graphics>(_simu->graphics())->
                     look_at({0.,3.,0.}, {0., 0., 0.5});
                 
-                // std::cout << "Inside GRAPHIC " << std::endl;
+                std::cout << "Inside GRAPHIC " << std::endl;
 
             #endif
 
@@ -269,6 +269,7 @@ namespace arm_dart{
 
         //==============================================================================
         void run_simu(double simulation_time){
+            std::cout << "Starting run " << std::endl;
             //--------------------------------------------------------------------------
             // Run simulation
             //--------------------------------------------------------------------------
@@ -277,6 +278,7 @@ namespace arm_dart{
             //--------------------------------------------------------------------------
             // Record simulation data
             //--------------------------------------------------------------------------
+            std::cout << "Recording simulation data " << std::endl;
             // Record total movement
             Eigen::VectorXd end_configuration = robot_dart::Utils::round_small(
                 std::static_pointer_cast<JointStateDesc>(_simu->descriptor(0))->joints_states.back()); 
@@ -293,6 +295,8 @@ namespace arm_dart{
 
             // Record simulation duration
             _total_steps = poses.size();
+
+            std::cout << "Run finalized " << std::endl;
         }
 
         //==============================================================================
@@ -316,8 +320,8 @@ namespace arm_dart{
             double threshold = 1e-3;
             for (const auto &element : velocities){
                 if (element.isZero(threshold)){
-                    std::cout << "Index of joints velocities lower than threshold " << threshold <<
-                        " is " << index << std::endl;
+                    // std::cout << "Index of joints velocities lower than threshold " << threshold <<
+                    //     " is " << index << std::endl;
                     return timestep * index;
                 }
                 index++;
@@ -352,7 +356,7 @@ namespace arm_dart{
             // Extract PID params from file
             std::ifstream pid_file(pid_file_path);
             std::string _line;
-            std::cout << "Reading file " << pid_file_path << std::endl;
+            // std::cout << "Reading file " << pid_file_path << std::endl;
             
             while(std::getline(pid_file, _line)){
                 std::istringstream line(_line);
