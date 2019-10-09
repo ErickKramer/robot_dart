@@ -140,34 +140,28 @@ namespace arm_dart{
     };
 
     //==============================================================================
-    class SchunkArm{
+    class SchunkArmSimu{
     public:
         using robot_t = std::shared_ptr<robot_dart::Robot>;
-        Eigen::VectorXd Kp;
-        Eigen::VectorXd Ki;
-        Eigen::VectorXd Kd;
 
-        SchunkArm(std::string urdf_path,
-            std::vector<std::pair<std::string, std::string>> packages, std::string name,
-            std::string end_effector_name) : _simu(std::make_shared<robot_dart::RobotDARTSimu>())
+        SchunkArmSimu(const std::vector<double>& ctrl, robot_t robot, double time_step,
+            std::string end_effector_name) :
+            _simu(std::make_shared<robot_dart::RobotDARTSimu>())
         {
-            //--------------------------------------------------------------------------
-            // Initialize robot
-            //--------------------------------------------------------------------------
-            auto robot = std::make_shared<robot_dart::Robot>(urdf_path, packages,name); 
+            _arm_robot = robot;
             
             // Pin arm to the world
-            robot->fix_to_world();
-            robot->set_position_enforced(true);
+            _arm_robot->fix_to_world();
+            _arm_robot->set_position_enforced(true);
 
             // Get DOFs of the robot
-            _num_dofs = robot->skeleton()->getNumDofs();
+            _num_dofs = _arm_robot->skeleton()->getNumDofs();
 
             // Get DOFs that can be controlled (identify mimic joints)
             double mimic_joints = 0;
             for (int i=0; i<_num_dofs; i++){
                 // auto joint = _arm_robot->skeleton()->getDof(i)->getJoint();
-                auto joint = robot->skeleton()->getDof(i)->getJoint();
+                auto joint = _arm_robot->skeleton()->getDof(i)->getJoint();
                 if (joint->getActuatorType() == dart::dynamics::Joint::MIMIC){
                     mimic_joints++;
                 }
@@ -175,31 +169,15 @@ namespace arm_dart{
             _num_ctrl_dofs = static_cast<int>(_num_dofs - mimic_joints);
             
             // Add controller to the robot
-            std::vector<double> ctrl(_num_ctrl_dofs, 0.0);
-            robot->add_controller(std::make_shared<robot_dart::control::PIDControl>(ctrl));
-
-            // Initialize PID parameters
-            Kp = Eigen::VectorXd::Ones(_num_ctrl_dofs); 
-            Ki = Eigen::VectorXd::Ones(_num_ctrl_dofs); 
-            Kd = Eigen::VectorXd::Ones(_num_ctrl_dofs); 
+            _arm_robot->add_controller(std::make_shared<robot_dart::control::PIDControl>(ctrl));
 
             // Initialize total_length
             _arm_total_length = 1.1814; // m
 
-            // Clone robot
-            _arm_robot = robot->clone(); 
-
             // Assign end_effector_name to track end_effector poses
             global::end_effector_name = end_effector_name;
-        }
 
-        ~SchunkArm() {}
-
-        //==============================================================================
-        void init_simu(double time_step){
-            //--------------------------------------------------------------------------
-            // Initialize Simulation
-            //--------------------------------------------------------------------------
+            // Set time_step
             _simu->set_step(time_step);
 
             // Load graphics
@@ -222,7 +200,12 @@ namespace arm_dart{
 
             // Add robot to the simulation
             _simu->add_robot(_arm_robot);
+
+            // Set Accelerations 
+            set_acceleration_limits(0.01);
         }
+
+        ~SchunkArmSimu() {}
 
         //==============================================================================
         void set_descriptors(std::vector<std::string> descriptors){
@@ -241,6 +224,8 @@ namespace arm_dart{
                     _simu->add_descriptor(std::make_shared<JointVelDesc>(*_simu));
                 }
             }
+
+            std::cout << "Descriptors set " << std::endl;
         }
         
         //==============================================================================
@@ -352,6 +337,9 @@ namespace arm_dart{
 
             double i_min = 0;
             double i_max = 0;
+            Eigen::VectorXd Kp = Eigen::VectorXd::Ones(_num_ctrl_dofs);
+            Eigen::VectorXd Ki = Eigen::VectorXd::Ones(_num_ctrl_dofs);
+            Eigen::VectorXd Kd = Eigen::VectorXd::Ones(_num_ctrl_dofs);
 
             // Extract PID params from file
             std::ifstream pid_file(pid_file_path);
@@ -386,6 +374,8 @@ namespace arm_dart{
             std::static_pointer_cast<robot_dart::control::PIDControl>(_arm_robot->controllers()[0])
                 ->set_pid(Kp, Ki, Kd, i_min, i_max);
             _ctrl = ctrl;
+
+            std::cout << "Controller initialized " << std::endl;
         }
 
         //==============================================================================
