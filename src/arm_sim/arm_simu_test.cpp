@@ -58,6 +58,7 @@ int main()
 
     std::vector<double> conf(arm_simu.get_control_dofs(), 0.0);
     conf[1] = M_PI_4;
+    conf[7] = 0.033;
 
     arm_simu.set_goal_configuration(conf);
     arm_simu.run_simu(simulation_time);
@@ -78,6 +79,7 @@ int main()
     arm_simu.reset_configuration();
 
     conf[1] = -M_PI_4;
+    conf[7] = 0.;
 
     arm_simu.set_goal_configuration(conf);
     arm_simu.run_simu(simulation_time);
