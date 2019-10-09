@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <arm_dart/arm_simulation.hpp>
+#include <robot_dart/robot.hpp>
 #include <boost/filesystem.hpp>
 #define GetCurrentDir getcwd
 
@@ -28,19 +29,21 @@ int main()
 
     std::string end_effector_name = "end_virtual_link";
 
-    // Instance of SchunkArm class
-    arm_dart::SchunkArm arm_simu(urdf_path, packages,name, end_effector_name);
+    // Create robot
+    auto robot = std::make_shared<robot_dart::Robot>(urdf_path, packages,name); 
 
-    // Initialize simulation
-    arm_simu.init_simu(time_step);
+    // Specify desired configuration
+    std::vector<double> conf(8, 0.0);
+    conf[1] = M_PI_4;
+    conf[7] = 0.033;
+
+    // Create simulation
+    arm_dart::SchunkArmSimu arm_simu(conf, robot, time_step, end_effector_name);
 
     // Initialize PID Controller
     std::string pid_file_path = cur_path.parent_path().string() 
         + "/robot_dart/res/pid_params.txt"; 
     arm_simu.init_controller(pid_file_path);
-
-    // Set Acceleration limits
-    arm_simu.set_acceleration_limits(0.01);
 
     // Set descriptors to analyze the simulation
     std::vector<std::string> descriptors = {"joint_states", "pose_states","velocity_states"};
@@ -51,16 +54,7 @@ int main()
 
     // Run simulation
     double simulation_time = 10.;
-    // arm_simu.run_simu(simulation_time/4);
 
-    // Reset states descriptors
-    // arm_simu.reset_descriptors(descriptors);
-
-    std::vector<double> conf(arm_simu.get_control_dofs(), 0.0);
-    conf[1] = M_PI_4;
-    conf[7] = 0.033;
-
-    arm_simu.set_goal_configuration(conf);
     arm_simu.run_simu(simulation_time);
 
     //--------------------------------------------------------------------------
@@ -78,21 +72,21 @@ int main()
     arm_simu.reset_descriptors(descriptors);
     arm_simu.reset_configuration();
 
-    conf[1] = -M_PI_4;
-    conf[7] = 0.;
+    // conf[1] = -M_PI_4;
+    // conf[7] = 0.;
 
-    arm_simu.set_goal_configuration(conf);
-    arm_simu.run_simu(simulation_time);
-    std::cout << "Pose of the end effector \n " << arm_simu.get_final_pose().transpose() << std::endl;
+    // arm_simu.set_goal_configuration(conf);
+    // arm_simu.run_simu(simulation_time);
+    // std::cout << "Pose of the end effector \n " << arm_simu.get_final_pose().transpose() << std::endl;
 
-    std::cout << "Total arm movement " << arm_simu.get_total_joints_motion()<< std::endl;
+    // std::cout << "Total arm movement " << arm_simu.get_total_joints_motion()<< std::endl;
     
-    std::cout << "Total torque " << arm_simu.get_total_torque()<< std::endl;
+    // std::cout << "Total torque " << arm_simu.get_total_torque()<< std::endl;
     
-    std::cout << "Number of time steps required to reach target configuration " 
-        << arm_simu.get_total_steps() << std::endl;
-    arm_simu.reset_descriptors(descriptors);
+    // std::cout << "Number of time steps required to reach target configuration " 
+    //     << arm_simu.get_total_steps() << std::endl;
+    // arm_simu.reset_descriptors(descriptors);
 
-    arm_simu.reset_robot();
+    // arm_simu.reset_robot();
     return 0;
 }
