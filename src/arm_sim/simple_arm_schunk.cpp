@@ -268,7 +268,7 @@ int main(){
     std::vector<double> ctrl(num_ctrl_dofs, 0.0);
 
     // Set values for the gripper (Close position)
-    // ctrl[7] = 1;
+    ctrl[1] = M_PI_2;
     // ctrl[8] = -0.029;
 
     // Add a PD-controller to the arm
