@@ -128,7 +128,7 @@ double total_movement(Eigen::VectorXd init_conf, Eigen::VectorXd end_conf){
     return total;
 }
 
-void display_run_results(robot_dart::RobotDARTSimu simu, double timestep, std::vector<double>& ctrl ){
+void display_run_results(robot_dart::RobotDARTSimu simu, double timestep, std::vector<double>& ctrl, double joint_to_tune){
     /*  Displays information relevant of the ran simulation
         Args:
         - simu:
@@ -160,7 +160,7 @@ void display_run_results(robot_dart::RobotDARTSimu simu, double timestep, std::v
 
     std::cout << "Joint angles requested " << target_positions.transpose() << std::endl;
     
-    std::cout << "Error for the arm configuration \n" << (target_positions - end_configuration).transpose() << std::endl;
+    std::cout << "Error for the arm configuration \n" << (target_positions - end_configuration)[joint_to_tune] << std::endl;
 
     std::cout << "Pose of the end effector \n " << poses.back().transpose() << std::endl;
 
@@ -216,7 +216,7 @@ int main(){
     // ---------------- Simulator ---------------------
     // Create robot_dart simulator
     std::srand(std::time(NULL));
-    double timestep = 0.001;
+    double timestep = 0.010;
     double simulation_time = 10.;
     // Setting timestep
     robot_dart::RobotDARTSimu simu(timestep);
@@ -268,7 +268,7 @@ int main(){
     std::vector<double> ctrl(num_ctrl_dofs, 0.0);
 
     // Set values for the gripper (Close position)
-    ctrl[1] = M_PI_2;
+    // ctrl[1] = M_PI_2;
     // ctrl[8] = -0.029;
 
     // Add a PD-controller to the arm
@@ -301,7 +301,7 @@ int main(){
     Eigen::VectorXd Kd = Eigen::VectorXd::Ones(num_ctrl_dofs); 
     double i_min;
     double i_max;
-    std::ifstream pid_file("src/arm_sim/pid_params.txt");
+    std::ifstream pid_file("res/pid_params.txt");
     std::string _line;
     
     while(std::getline(pid_file, _line)){
@@ -371,18 +371,18 @@ int main(){
     std::cout << "Position lower lim " << arm_robot -> skeleton() -> getPositionLowerLimits().transpose() << std::endl;
     std::cout<<"-----------------------------------"<<std::endl;
 
-    std::cout << "Initial joint angles requested" << std::endl;
-    for (auto c : ctrl) std::cout << c << " ";
-    std::cout << std::endl;
+    // std::cout << "Initial joint angles requested" << std::endl;
+    // for (auto c : ctrl) std::cout << c << " ";
+    // std::cout << std::endl;
     
     // auto start = std::chrono::steady_clock::now();
     
     // Run simulation
-    simu.run(simulation_time/4);
+    // simu.run(simulation_time/4);
 
     // auto end = std::chrono::steady_clock::now();
 
-    display_run_results(simu, timestep, ctrl);
+    // display_run_results(simu, timestep, ctrl);
     
     // std::cout << "Simulation ran for " << 
     //     std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() 
@@ -393,15 +393,17 @@ int main(){
     //         << " sec " <<std::endl;
 
     // Reset States vector
-    std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
-    std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states.clear();
-    std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities.clear();
+    // std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
+    // std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states.clear();
+    // std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities.clear();
 
     std::cout<<"-----------------------------------"<<std::endl;
 
-    std::cout<<"Moving joint " << joint_to_tune << " pi/2 radians"<<std::endl;
+    std::cout<<"Moving joint " << joint_to_tune << " " << M_PI_2 << " radians"<<std::endl;
 
-    ctrl[joint_to_tune] = M_PI_2;
+    ctrl[joint_to_tune] = M_PI_2*0;
+    if (joint_to_tune == 7)
+        ctrl[joint_to_tune] = 0.033;
     // ctrl[0] = M_PI_2;
     // ctrl[1] = -M_PI_2;
     // ctrl[2] = M_PI_2;
@@ -417,7 +419,7 @@ int main(){
 
     // Run simulation
     simu.run(simulation_time);
-    display_run_results(simu, timestep, ctrl);
+    display_run_results(simu, timestep, ctrl, joint_to_tune);
 
     // Create a velocities log file to analyze the top velocity of the movement
     std::vector<Eigen::VectorXd> velocities = std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities;
@@ -430,27 +432,27 @@ int main(){
 
     std::cout<<"-----------------------------------"<<std::endl;
 
-    // ctrl[joint_to_tune] = 0;
-    std::vector<double> initial_conf(num_ctrl_dofs, 0.0);
-    ctrl = initial_conf;
+    // // ctrl[joint_to_tune] = 0;
+    // std::vector<double> initial_conf(num_ctrl_dofs, 0.0);
+    // ctrl = initial_conf;
 
-    // Set controller
-    arm_robot->controllers()[0]->set_parameters(ctrl);
+    // // Set controller
+    // arm_robot->controllers()[0]->set_parameters(ctrl);
 
-    // Run simulation
-    simu.run(simulation_time);
-    display_run_results(simu, timestep, ctrl);
+    // // Run simulation
+    // simu.run(simulation_time);
+    // display_run_results(simu, timestep, ctrl);
 
-    // Create a velocities log file to analyze the top velocity of the movement
-    velocities = std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities;
-    backup(velocities, "text", "velocities_to_initial.txt");
+    // // Create a velocities log file to analyze the top velocity of the movement
+    // // velocities = std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities;
+    // // backup(velocities, "text", "velocities_to_initial.txt");
 
-    // Reset States vector
-    std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
-    std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states.clear();
-    std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities.clear();
+    // // Reset States vector
+    // std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
+    // std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states.clear();
+    // std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities.clear();
 
-    std::cout<<"-----------------------------------"<<std::endl;
+    // std::cout<<"-----------------------------------"<<std::endl;
 
     // std::cout<<"Moving second joint -pi/2 radians"<<std::endl;
 

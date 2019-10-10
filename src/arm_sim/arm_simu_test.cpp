@@ -25,7 +25,7 @@ int main()
     std::string urdf_path = cur_path.parent_path().string() 
         + "/robot_dart/res/models/schunk_with_pg70.urdf";
     std::string name = "schunk arm";
-    double time_step = 0.001;
+    double time_step = 0.015;
 
     std::string end_effector_name = "end_virtual_link";
 
