@@ -144,10 +144,37 @@ namespace arm_dart{
     public:
         using robot_t = std::shared_ptr<robot_dart::Robot>;
 
+        SchunkArmSimu(robot_t robot, std::string end_effector_name){
+            //--------------------------------------------------------------------------
+            // Simple constructor used only to get information about the robot
+            //--------------------------------------------------------------------------
+            _arm_robot = robot;
+            
+            // Get DOFs of the robot
+            _num_dofs = _arm_robot->skeleton()->getNumDofs();
+            
+            // Get DOFs that can be controlled (identify mimic joints)
+            double mimic_joints = 0;
+            for (int i=0; i<_num_dofs; i++){
+                // auto joint = _arm_robot->skeleton()->getDof(i)->getJoint();
+                auto joint = _arm_robot->skeleton()->getDof(i)->getJoint();
+                if (joint->getActuatorType() == dart::dynamics::Joint::MIMIC){
+                    mimic_joints++;
+                }
+            }
+            _num_ctrl_dofs = static_cast<int>(_num_dofs - mimic_joints);
+            
+            global::end_effector_name = end_effector_name;
+        }
+
+        //==============================================================================
         SchunkArmSimu(const std::vector<double>& ctrl, robot_t robot, double time_step,
             std::string end_effector_name) :
             _simu(std::make_shared<robot_dart::RobotDARTSimu>())
         {
+            //--------------------------------------------------------------------------
+            // Full constructor of the Schunk Arm simulation
+            //--------------------------------------------------------------------------
             _arm_robot = robot;
             
             // Pin arm to the world
@@ -170,6 +197,7 @@ namespace arm_dart{
             
             // Add controller to the robot
             _arm_robot->add_controller(std::make_shared<robot_dart::control::PIDControl>(ctrl));
+            // _arm_robot->add_controller(std::make_shared<robot_dart::control::PDControl>(ctrl));
 
             // Initialize total_length
             _arm_total_length = 1.1814; // m
@@ -190,7 +218,7 @@ namespace arm_dart{
                 std::static_pointer_cast<robot_dart::graphics::Graphics>(_simu->graphics())->
                     look_at({0.,3.,0.}, {0., 0., 0.5});
                 
-                std::cout << "Inside GRAPHIC " << std::endl;
+                std::cout << "GRAPHIC Enabled" << std::endl;
 
             #endif
 
@@ -205,6 +233,7 @@ namespace arm_dart{
             set_acceleration_limits(0.01);
         }
 
+        //==============================================================================
         ~SchunkArmSimu() {}
 
         //==============================================================================
@@ -225,7 +254,7 @@ namespace arm_dart{
                 }
             }
 
-            std::cout << "Descriptors set " << std::endl;
+            // std::cout << "Descriptors set " << std::endl;
         }
         
         //==============================================================================
@@ -254,7 +283,7 @@ namespace arm_dart{
 
         //==============================================================================
         void run_simu(double simulation_time){
-            std::cout << "Starting run " << std::endl;
+            // std::cout << "Starting run " << std::endl;
             //--------------------------------------------------------------------------
             // Run simulation
             //--------------------------------------------------------------------------
@@ -263,7 +292,7 @@ namespace arm_dart{
             //--------------------------------------------------------------------------
             // Record simulation data
             //--------------------------------------------------------------------------
-            std::cout << "Recording simulation data " << std::endl;
+            // std::cout << "Recording simulation data " << std::endl;
             // Record total movement
             Eigen::VectorXd end_configuration = robot_dart::Utils::round_small(
                 std::static_pointer_cast<JointStateDesc>(_simu->descriptor(0))->joints_states.back()); 
@@ -281,7 +310,7 @@ namespace arm_dart{
             // Record simulation duration
             _total_steps = poses.size();
 
-            std::cout << "Run finalized " << std::endl;
+            // std::cout << "Run finalized " << std::endl;
         }
 
         //==============================================================================
@@ -332,8 +361,6 @@ namespace arm_dart{
             //--------------------------------------------------------------------------
             // Initialize PID Controller
             //--------------------------------------------------------------------------
-            // Initial arm configuration
-            std::vector<double> ctrl(_num_ctrl_dofs, 0.0);
 
             double i_min = 0;
             double i_max = 0;
@@ -373,9 +400,7 @@ namespace arm_dart{
             // Set PID gains
             std::static_pointer_cast<robot_dart::control::PIDControl>(_arm_robot->controllers()[0])
                 ->set_pid(Kp, Ki, Kd, i_min, i_max);
-            _ctrl = ctrl;
-
-            std::cout << "Controller initialized " << std::endl;
+            // std::cout << "Controller initialized " << std::endl;
         }
 
         //==============================================================================
@@ -470,9 +495,6 @@ namespace arm_dart{
         Eigen::VectorXd _end_effector_pose;
         double _total_steps;
         double _arm_total_length;
-
-
-
     };
 } //namespace arm_dart
 
