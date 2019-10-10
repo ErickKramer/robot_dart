@@ -165,6 +165,9 @@ namespace arm_dart{
             _num_ctrl_dofs = static_cast<int>(_num_dofs - mimic_joints);
             
             global::end_effector_name = end_effector_name;
+            
+            // Set Accelerations 
+            set_acceleration_limits(0.01);
         }
 
         //==============================================================================
