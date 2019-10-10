@@ -60,7 +60,7 @@ namespace arm_dart{
         // and with a certain threshold
         //--------------------------------------------------------------------------
         double threshold = 1e-3;
-        size_t checking_limit = 500.;
+        size_t checking_limit = 2500.;
 
         // Iterate backwards and compare a pair of joints positions
         for (size_t i = 0; i < checking_limit; i++){

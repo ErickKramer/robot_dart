@@ -34,8 +34,15 @@ int main()
 
     // Specify desired configuration
     std::vector<double> conf(8, 0.0);
-    conf[1] = M_PI_4;
-    conf[7] = 0.033;
+    conf[1] = M_PI_2;
+    // conf[0] = 0.360641;
+    // conf[1] = -0.759309;
+    // conf[2] = -0.601249;
+    // conf[3] = 0.098047;
+    // conf[4] = -0.992919;
+    // conf[5] = -0.695747;
+    // conf[6] = -0.788559;
+    // conf[7] = 0.;
 
     // Create simulation
     arm_dart::SchunkArmSimu arm_simu(conf, robot, time_step, end_effector_name);
@@ -72,11 +79,11 @@ int main()
     arm_simu.reset_descriptors(descriptors);
     arm_simu.reset_configuration();
 
-    // conf[1] = -M_PI_4;
+    conf[1] = -M_PI_4;
     // conf[7] = 0.;
 
-    // arm_simu.set_goal_configuration(conf);
-    // arm_simu.run_simu(simulation_time);
+    arm_simu.set_goal_configuration(conf);
+    arm_simu.run_simu(simulation_time);
     // std::cout << "Pose of the end effector \n " << arm_simu.get_final_pose().transpose() << std::endl;
 
     // std::cout << "Total arm movement " << arm_simu.get_total_joints_motion()<< std::endl;
