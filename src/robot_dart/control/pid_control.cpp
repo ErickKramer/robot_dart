@@ -1,7 +1,6 @@
 #include "pid_control.hpp"
 #include "robot_dart/robot.hpp"
 #include "robot_dart/utils.hpp"
-#include <typeinfo>
 
 namespace robot_dart {
     namespace control {
@@ -31,7 +30,7 @@ namespace robot_dart {
             
             // Get target_positions
             Eigen::VectorXd target_positions = Eigen::VectorXd::Map(_ctrl.data(), _ctrl.size());
-            
+
             // Get current_positions
             Eigen::VectorXd current_positions = get_positions();
 
@@ -45,7 +44,6 @@ namespace robot_dart {
             Eigen::VectorXd Pout = _Kp.array() * error.array();
 
             // Compute Integral term
-            // _integral = _integral.array() + error.array() * time_step;
             _integral = _integral.array() + ((error.array() + _pre_error.array())/2.0)*time_step;
             Eigen::VectorXd Iout = _Ki.array() * _integral.array();
 
@@ -68,13 +66,7 @@ namespace robot_dart {
             Eigen::VectorXd commands = Pout + Iout + Dout;
 
             // Accumulate torque
-            _total_torque += commands.sum();
-
-            // double threshold = 1e-5;
-            // for (size_t i = 0; i < commands.size(); i++){
-            //     if (abs(commands[i]) < threshold)
-            //         commands[i] = 0;
-            // }
+            _total_torque += abs(commands.sum());
 
             return commands;
         }
@@ -93,6 +85,7 @@ namespace robot_dart {
             _integral = Eigen::VectorXd::Zero(_control_dof);
             _i_min = i_min;
             _i_max = i_max;
+
         }
 
         //==============================================================================
