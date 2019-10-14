@@ -73,8 +73,12 @@ namespace robot_dart {
         void set_damping_coeffs(const std::vector<double>& damps);
         void set_damping_coeffs(double damp);
 
+
         double damping_coeff(size_t dof) const;
         std::vector<double> damping_coeffs() const;
+
+        void set_friction_coeff(double friction);
+        double friction_coeff(size_t dof);
 
         void set_base_pose(const Eigen::Isometry3d& tf);
 

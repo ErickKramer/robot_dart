@@ -284,6 +284,7 @@ namespace robot_dart {
         }
     }
 
+
     double Robot::damping_coeff(size_t dof) const
     {
         ROBOT_DART_ASSERT(dof < _skeleton->getNumDofs(), "DOF index out of bounds", 0.);
@@ -298,6 +299,16 @@ namespace robot_dart {
         }
 
         return damps;
+    }
+    void Robot::set_friction_coeff(double friction){
+        for (size_t i = 0; i < _skeleton->getNumBodyNodes(); ++i) {
+            _skeleton->getBodyNode(i)->setFrictionCoeff(friction);
+        }
+
+    }
+
+    double Robot::friction_coeff(size_t dof){
+        return _skeleton->getBodyNode(dof)->getFrictionCoeff();
     }
 
     void Robot::set_base_pose(const Eigen::Isometry3d& tf)
