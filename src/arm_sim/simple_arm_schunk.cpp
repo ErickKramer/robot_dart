@@ -247,7 +247,7 @@ int main(){
 
         // Set camera position looking at the center
         std::static_pointer_cast<robot_dart::graphics::Graphics>(simu.graphics())->
-            look_at({0., 3., 0.}, {0., 0., 0.5});
+            look_at({3., 1., 0.}, {0., 0., 0.5});
     #endif
 
     // Get DOFs of the robot
@@ -399,11 +399,16 @@ int main(){
 
     std::cout<<"-----------------------------------"<<std::endl;
 
-    std::cout<<"Moving joint " << joint_to_tune << " " << M_PI_2 << " radians"<<std::endl;
 
-    ctrl[joint_to_tune] = M_PI_2*0;
-    if (joint_to_tune == 7)
+    if (joint_to_tune == 7){
+        std::cout<<"Opening gripper " << std::endl;
         ctrl[joint_to_tune] = 0.033;
+    }
+    else{
+        std::cout<<"Moving joint " << joint_to_tune << " " << M_PI_2 << " radians"<<std::endl;
+        ctrl[joint_to_tune] = M_PI_2;
+    }
+
     // ctrl[0] = M_PI_2;
     // ctrl[1] = -M_PI_2;
     // ctrl[2] = M_PI_2;
