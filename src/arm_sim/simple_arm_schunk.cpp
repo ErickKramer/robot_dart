@@ -24,8 +24,6 @@
 Eigen::VectorXd compute_pose(Eigen::Isometry3d link_transform);
 // double movement_duration(std::vector<VectorXd> velocities, double timestep);
 
-
-
 struct JointStateDesc : public robot_dart::descriptor::BaseDescriptor{
     // Descriptor used to record the joints states
     JointStateDesc(robot_dart::RobotDARTSimu& simu, size_t desc_dump = 1) :
@@ -118,7 +116,7 @@ double movement_duration(std::vector<Eigen::VectorXd> velocities, double timeste
 
 double total_movement(Eigen::VectorXd init_conf, Eigen::VectorXd end_conf){
     /*
-    Computes the amount of radians the arm moved from the initial configuration to 
+    Computes the amount of radians the arm moved from the initial configuration to
     the final configuration
      */
     double total = 0;
@@ -159,8 +157,9 @@ void display_run_results(robot_dart::RobotDARTSimu simu, double timestep, std::v
     } 
 
     std::cout << "Joint angles requested " << target_positions.transpose() << std::endl;
-    
-    std::cout << "Error for the arm configuration \n" << (target_positions - end_configuration)[joint_to_tune] << std::endl;
+
+    if (joint_to_tune < ctrl.size()) 
+        std::cout << "Error for the arm configuration \n" << abs((target_positions - end_configuration)[joint_to_tune]) << std::endl;
 
     std::cout << "Pose of the end effector \n " << poses.back().transpose() << std::endl;
 
@@ -194,7 +193,6 @@ void backup(const std::vector<Eigen::VectorXd> v, std::string file_type, std::st
 
 }
 
-
 int main(){
 
     // std::string system = "Home";
@@ -217,7 +215,7 @@ int main(){
     // Create robot_dart simulator
     std::srand(std::time(NULL));
     double timestep = 0.010;
-    double simulation_time = 10.;
+    double simulation_time = 5.;
     // Setting timestep
     robot_dart::RobotDARTSimu simu(timestep);
 
@@ -247,7 +245,8 @@ int main(){
 
         // Set camera position looking at the center
         std::static_pointer_cast<robot_dart::graphics::Graphics>(simu.graphics())->
-            look_at({3., 1., 0.}, {0., 0., 0.5});
+            look_at({0., 3., 0.}, {0., 0., 0.5});
+            // look_at({3., 1., 0.}, {0., 0., 0.5});
     #endif
 
     // Get DOFs of the robot
@@ -352,6 +351,11 @@ int main(){
     simu.world()->getConstraintSolver()->
         setCollisionDetector(dart::collision::FCLCollisionDetector::create());
 
+    // set friction
+    arm_robot->set_friction_coeff(1.0);
+
+    std::cout << "Friction coefficient " << arm_robot->friction_coeff(6) << std::endl;
+
     // Add robot to the simulator
     simu.add_robot(arm_robot);
 
@@ -363,6 +367,7 @@ int main(){
     // Display arm information
     std::cout << "Arm: " << arm_robot->name() << std::endl;
     std::cout << "Number of DoF: " << num_dofs << std::endl;
+    std::cout << "Number of controllable joints : " << num_ctrl_dofs << std::endl;
     std::cout << "Acceleration lower " << arm_robot -> skeleton() -> getAccelerationLowerLimits().transpose() << std::endl;
     std::cout << "Acceleration higher " << arm_robot -> skeleton() -> getAccelerationUpperLimits().transpose() << std::endl;
     std::cout << "Velocity lower " << arm_robot -> skeleton() -> getVelocityLowerLimits().transpose() << std::endl;
@@ -403,21 +408,12 @@ int main(){
     if (joint_to_tune == 7){
         std::cout<<"Opening gripper " << std::endl;
         ctrl[joint_to_tune] = 0.033;
-    }
-    else{
+    } else if (joint_to_tune > num_ctrl_dofs){
+        std::cout << "Arm holding still " << std::endl;   
+    } else{
         std::cout<<"Moving joint " << joint_to_tune << " " << M_PI_2 << " radians"<<std::endl;
         ctrl[joint_to_tune] = M_PI_2;
     }
-
-    // ctrl[0] = M_PI_2;
-    // ctrl[1] = -M_PI_2;
-    // ctrl[2] = M_PI_2;
-    // ctrl[3] = -M_PI_2;
-    // ctrl[4] = M_PI_2;
-    // ctrl[5] = -M_PI_2;
-    // ctrl[6] = M_PI_2;
-    // ctrl[7] = 0.033;
-    // ctrl[joint_to_tune] = 0.033;
 
     // Set controller
     arm_robot->controllers()[0]->set_parameters(ctrl);
@@ -438,14 +434,14 @@ int main(){
     std::cout<<"-----------------------------------"<<std::endl;
 
     // // ctrl[joint_to_tune] = 0;
-    // std::vector<double> initial_conf(num_ctrl_dofs, 0.0);
-    // ctrl = initial_conf;
+    std::vector<double> initial_conf(num_ctrl_dofs, 0.0);
+    ctrl = initial_conf;
 
-    // // Set controller
-    // arm_robot->controllers()[0]->set_parameters(ctrl);
+    // Set controller
+    arm_robot->controllers()[0]->set_parameters(ctrl);
 
-    // // Run simulation
-    // simu.run(simulation_time);
+    // Run simulation
+    simu.run(simulation_time);
     // display_run_results(simu, timestep, ctrl);
 
     // // Create a velocities log file to analyze the top velocity of the movement
@@ -485,59 +481,3 @@ int main(){
     return 0;
 
 }
-
-// NOTE: REFACTOR
-// void display_link_info(Eigen::Isometry3d link_transform){
-
-//     /*
-//         Displays the following information from the transform of a link:
-//         - Homogeneous Transformation matrix
-//         - Rotation matrix
-//         - Translation matrix
-//         - Quaternion
-//         - Euler angles
-//         - Pose
-//     */
-
-//     Computes rotation matrix
-//     Eigen::Matrix3d rot_matrix = link_transform.rotation();
-//     // Computes Homogeneous transformation matrix
-//     Eigen::Matrix4d transformation_matrix = link_transform.matrix();
-//     // Computes Quaternions
-//     Eigen::Quaterniond quat_end(rot_matrix);
-//     // Computes Euler angles
-//     Eigen::Vector3d euler = rot_matrix.eulerAngles(2,1,0);
-//     // Computes translation vector
-//     Eigen::VectorXd translation = link_transform.translation();
-//     // Computes pose vector
-//     Eigen::VectorXd pose(link_transform.translation().size() + euler.size());
-//     pose << translation, euler;
-//     Computes an axis angle based on the quaternions
-//     https://eigen.tuxfamily.org/dox/classEigen_1_1AngleAxis.html
-//     Eigen::AngleAxisd angle_axis(quat_end);
-
-
-//     std::cout << "Homogeneous transformation matrix" << std::endl;
-//     std::cout << transformation_matrix << std::endl;
-
-//     std::cout << "\n Rotation matrix" << std::endl;
-//     std::cout << rot_matrix << std::endl;
-
-//     std::cout << "\n Translation vector" << std::endl;
-//     std::cout << translation << std::endl;
-
-//     std::cout << "\n Quaternion" << std::endl;
-//     std::cout << "w: " << quat_end.w() << " x: " << quat_end.x() <<
-//                  " y: " << quat_end.y() << " z: " << quat_end.z() << std::endl;
-
-//     std::cout << "\n Euler angles" << std::endl;
-//     std::cout << "Yaw: " << euler[0] << " Pitch: " << euler [1] << " Roll: " <<
-//                  euler[2] << std::endl;
-
-//     std::cout << "\n Pose" << std::endl;
-//     std::cout << compute_pose(link_transform).transpose() << std::endl;
-
-//     std::cout << "\n Axis angle" << std::endl;
-//     std::cout << angle_axis.axis().transpose() << std::endl;
-//     std::cout<< angle_axis.angle() << std::endl;
-// }
