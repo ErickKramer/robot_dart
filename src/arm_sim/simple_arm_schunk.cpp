@@ -118,7 +118,7 @@ double movement_duration(std::vector<Eigen::VectorXd> velocities, double timeste
 
 double total_movement(Eigen::VectorXd init_conf, Eigen::VectorXd end_conf){
     /*
-    Computes the amount of radians the arm moved from the initial configuration to 
+    Computes the amount of radians the arm moved from the initial configuration to
     the final configuration
      */
     double total = 0;
@@ -136,18 +136,18 @@ void display_run_results(robot_dart::RobotDARTSimu simu, double timestep, std::v
     */
     std::cout << "Number of joints_states recorded " <<
         std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.size() << std::endl;
-    std::vector<Eigen::VectorXd> poses = 
+    std::vector<Eigen::VectorXd> poses =
         std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states;
     std::cout << "Number of pose_states recorded " << poses.size() << std::endl;
-    
+
     Eigen::VectorXd initial_configuration = robot_dart::Utils::round_small(
-        std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.front()); 
+        std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.front());
     std::cout << "Initial joints configuration \n" << initial_configuration.transpose() << std::endl;
 
     Eigen::VectorXd end_configuration = robot_dart::Utils::round_small(
-        std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.back()); 
+        std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.back());
     std::cout << "Final joints configuration \n" << end_configuration.transpose() << std::endl;
-   
+
     Eigen::VectorXd target_positions = Eigen::VectorXd::Map(ctrl.data(), ctrl.size());
 
     // In the case that a joint is mimic (e.g. gripper fingers)
@@ -156,10 +156,10 @@ void display_run_results(robot_dart::RobotDARTSimu simu, double timestep, std::v
         target_positions.conservativeResize(end_configuration.size());
         // Copy the target position value of the last joint controlled to the mimic joint position
         target_positions[end_configuration.size()-1] = target_positions[end_configuration.size()-2];
-    } 
+    }
 
     std::cout << "Joint angles requested " << target_positions.transpose() << std::endl;
-    
+
     std::cout << "Error for the arm configuration \n" << (target_positions - end_configuration).transpose() << std::endl;
 
     std::cout << "Pose of the end effector \n " << poses.back().transpose() << std::endl;
@@ -167,7 +167,7 @@ void display_run_results(robot_dart::RobotDARTSimu simu, double timestep, std::v
     std::cout << "Total arm movement " << total_movement(initial_configuration, end_configuration) << std::endl;
 
     // Collect recorded velocities
-    std::vector<Eigen::VectorXd> velocities = 
+    std::vector<Eigen::VectorXd> velocities =
         std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities;
     // backup(velocities, "text", "velocities.txt");
 
@@ -236,7 +236,7 @@ int main(){
         }
         else if(system == "FKIE"){
             std::cout<<"Running 1920x1200 resolution " << std::endl;
-            // Resolution screen at work 
+            // Resolution screen at work
             simu.set_graphics(
                 std::make_shared<robot_dart::graphics::Graphics>(simu.world(), 1920,1200, true, true));
         }
@@ -247,7 +247,7 @@ int main(){
 
         // Set camera position looking at the center
         std::static_pointer_cast<robot_dart::graphics::Graphics>(simu.graphics())->
-            look_at({0., 3., 0.}, {0., 0., 0.5});
+            look_at({3., 1., 0.}, {0., 0., 0.5});
     #endif
 
     // Get DOFs of the robot
@@ -261,49 +261,49 @@ int main(){
             mimic_joints++;
         }
     }
-    int num_ctrl_dofs = static_cast<int>(num_dofs - mimic_joints);    
+    int num_ctrl_dofs = static_cast<int>(num_dofs - mimic_joints);
 
     // Set of desired initial configuration
     // std::vector<double> ctrl(num_dofs, 0.0);
     std::vector<double> ctrl(num_ctrl_dofs, 0.0);
 
     // Set values for the gripper (Close position)
-    ctrl[1] = M_PI_2;
+    //ctrl[1] = M_PI_2;
     // ctrl[8] = -0.029;
 
     // Add a PD-controller to the arm
     // arm_robot->add_controller(std::make_shared<robot_dart::control::PDControl>(ctrl));
-    
-    // Add a PID Controller for the arm  
+
+    // Add a PID Controller for the arm
     arm_robot->add_controller(std::make_shared<robot_dart::control::PIDControl>(ctrl));
-    
+
     // PID_params
     // Computes Kp Vector
     /*
-    Joints: 
+    Joints:
     - 0: Rolling : Set
     - 1: Flexing : Set
-    - 2: Rolling : Set 
+    - 2: Rolling : Set
     - 3: Flexing : Set
-    - 4: Rolling : Set 
-    - 5: Flexing : Set 
-    - 6: Rolling : Set 
-    - 7: Left finger : Set 
+    - 4: Rolling : Set
+    - 5: Flexing : Set
+    - 6: Rolling : Set
+    - 7: Left finger : Set
     - 8: Right finger : Not Set  (Mimic)
     */
 
     // double joint_to_tune = 3;
     double joint_to_tune;
 
-    // Load PID Params  
-    Eigen::VectorXd Kp = Eigen::VectorXd::Ones(num_ctrl_dofs); 
-    Eigen::VectorXd Ki = Eigen::VectorXd::Ones(num_ctrl_dofs); 
-    Eigen::VectorXd Kd = Eigen::VectorXd::Ones(num_ctrl_dofs); 
+    // Load PID Params
+    Eigen::VectorXd Kp = Eigen::VectorXd::Ones(num_ctrl_dofs);
+    Eigen::VectorXd Ki = Eigen::VectorXd::Ones(num_ctrl_dofs);
+    Eigen::VectorXd Kd = Eigen::VectorXd::Ones(num_ctrl_dofs);
     double i_min;
     double i_max;
-    std::ifstream pid_file("src/arm_sim/pid_params.txt");
+    std::ifstream pid_file("res/pid_params.txt");
     std::string _line;
-    
+
     while(std::getline(pid_file, _line)){
         std::istringstream line(_line);
         std::vector<std::string> params(std::istream_iterator<std::string>{line},
@@ -341,7 +341,7 @@ int main(){
     // Set PD gains
     std::static_pointer_cast<robot_dart::control::PIDControl>(arm_robot->controllers()[0])
       ->set_pid(Kp, Ki, Kd, i_min, i_max);
-    
+
     // Set Accelaration limits
     Eigen::VectorXd acc_upper_limit = Eigen::VectorXd::Ones(num_dofs)*0.01;
     Eigen::VectorXd acc_lower_limit = Eigen::VectorXd::Ones(num_dofs)*-0.01;
@@ -374,22 +374,22 @@ int main(){
     std::cout << "Initial joint angles requested" << std::endl;
     for (auto c : ctrl) std::cout << c << " ";
     std::cout << std::endl;
-    
+
     // auto start = std::chrono::steady_clock::now();
-    
+
     // Run simulation
     simu.run(simulation_time/4);
 
     // auto end = std::chrono::steady_clock::now();
 
     display_run_results(simu, timestep, ctrl);
-    
-    // std::cout << "Simulation ran for " << 
-    //     std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() 
+
+    // std::cout << "Simulation ran for " <<
+    //     std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
     //         << " ms " <<std::endl;
 
-    // std::cout << "Simulation ran for " << 
-    //     std::chrono::duration_cast<std::chrono::seconds>(end - start).count() 
+    // std::cout << "Simulation ran for " <<
+    //     std::chrono::duration_cast<std::chrono::seconds>(end - start).count()
     //         << " sec " <<std::endl;
 
     // Reset States vector
@@ -401,7 +401,6 @@ int main(){
 
     std::cout<<"Moving joint " << joint_to_tune << " pi/2 radians"<<std::endl;
 
-    ctrl[joint_to_tune] = M_PI_2;
     // ctrl[0] = M_PI_2;
     // ctrl[1] = -M_PI_2;
     // ctrl[2] = M_PI_2;
@@ -410,11 +409,15 @@ int main(){
     // ctrl[5] = -M_PI_2;
     // ctrl[6] = M_PI_2;
     // ctrl[7] = 0.033;
-    // ctrl[joint_to_tune] = 0.033;
+    if (joint_to_tune == 7){
+        ctrl[joint_to_tune] = 0.033;
+    }else{
+        ctrl[joint_to_tune] = M_PI_2;
+    }
 
     // Set controller
-    arm_robot->controllers()[0]->set_parameters(ctrl);
-
+    arm_robot->controllers()[0]->set_parameters(ctrl); 
+         
     // Run simulation
     simu.run(simulation_time);
     display_run_results(simu, timestep, ctrl);
