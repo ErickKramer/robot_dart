@@ -222,6 +222,9 @@ int main(){
     // Pin the arm to the world
     arm_robot->fix_to_world();
     arm_robot->set_position_enforced(true);
+    
+    // set friction
+    // arm_robot->set_friction_coeff(1000000.0);
 
     #ifdef GRAPHIC
         // Specify the graphics for the simulator
@@ -351,8 +354,6 @@ int main(){
     simu.world()->getConstraintSolver()->
         setCollisionDetector(dart::collision::FCLCollisionDetector::create());
 
-    // set friction
-    arm_robot->set_friction_coeff(1.0);
 
     std::cout << "Friction coefficient " << arm_robot->friction_coeff(6) << std::endl;
 
