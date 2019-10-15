@@ -301,7 +301,7 @@ namespace robot_dart {
         return damps;
     }
     void Robot::set_friction_coeff(double friction){
-        for (size_t i = 0; i < _skeleton->getNumBodyNodes(); ++i) {
+        for (size_t i = 0; i < _skeleton->getNumBodyNodes(); i++) {
             _skeleton->getBodyNode(i)->setFrictionCoeff(friction);
         }
 
