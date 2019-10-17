@@ -367,7 +367,7 @@
     </visual>
   </link>
   <joint name="pg70_finger_left_joint" type="prismatic">
-    <origin rpy="0 0 0" xyz="0 0.0055 0.0789"/>
+    <origin rpy="0 0 0" xyz="0 0.0055 0.0989"/>
     <parent link="pg70_palm_link"/>
     <child link="pg70_finger_left_link"/>
     <axis xyz="0 1 0"/>
@@ -398,7 +398,7 @@
     </collision>
   </link>
   <joint name="pg70_finger_right_joint" type="prismatic">
-    <origin rpy="0 0 0" xyz="0 -0.0055 0.0789"/>
+    <origin rpy="0 0 0" xyz="0 -0.0055 0.0989"/>
     <parent link="pg70_palm_link"/>
     <child link="pg70_finger_right_link"/>
     <axis xyz="0 -1 0"/>
