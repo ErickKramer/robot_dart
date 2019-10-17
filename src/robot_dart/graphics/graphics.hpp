@@ -9,11 +9,15 @@ namespace robot_dart {
     namespace graphics {
         class Graphics : public BaseGraphics {
         public:
-            Graphics(const dart::simulation::WorldPtr& world, unsigned int width = 640, unsigned int height = 480, bool shadowed = true) : _world(world), _width(width), _height(height), _frame_counter(0), _enabled(true)
+            Graphics(const dart::simulation::WorldPtr& world, unsigned int width = 640, unsigned int height = 480, bool shadowed = true, bool real_time = false) : _world(world), _width(width), _height(height), _frame_counter(0), _enabled(true)
             {
                 _osg_viewer = new dart::gui::osg::Viewer;
                 _osg_viewer->setThreadingModel(osgViewer::ViewerBase::ThreadingModel::SingleThreaded);
-                _osg_world_node = new dart::gui::osg::WorldNode(world);
+                if (real_time){
+                    _osg_world_node = new dart::gui::osg::RealTimeWorldNode(world);
+                }else{
+                    _osg_world_node = new dart::gui::osg::WorldNode(world);
+                }
                 if (shadowed)
                     _osg_world_node->setShadowTechnique(dart::gui::osg::WorldNode::createDefaultShadowTechnique(_osg_viewer));
                 set_render_period(world->getTimeStep());
@@ -48,7 +52,7 @@ namespace robot_dart {
                     _osg_viewer->realize();
                 }
 
-                // process next frame
+                // process next frame refresh
                 if (_frame_counter % _render_period == 0)
                     _osg_viewer->frame();
                 _frame_counter++;
@@ -79,6 +83,16 @@ namespace robot_dart {
                 _osg_viewer->getCameraManipulator()->setHomePosition(
                     osg::Vec3d(_camera_pos(0), _camera_pos(1), _camera_pos(2)), osg::Vec3d(_look_at(0), _look_at(1), _look_at(2)), osg::Vec3d(_camera_up(0), _camera_up(1), _camera_up(2)));
                 _osg_viewer->home();
+            }
+
+            void add_instruction(const std::string& instruction){
+                // Add instruction to the viewer
+                _osg_viewer->addInstructionText(instruction);
+            }
+
+            void display_instructions(){
+                // Display instructions of the viewer
+                std::cout << _osg_viewer->getInstructions() << std::endl;
             }
 
 #if DART_VERSION_AT_LEAST(6, 8, 0)

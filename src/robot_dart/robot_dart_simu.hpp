@@ -71,6 +71,7 @@ namespace robot_dart {
         std::vector<robot_t> _robots;
         std::shared_ptr<graphics::BaseGraphics> _graphics;
     };
+    typedef std::shared_ptr<RobotDARTSimu> RobotDARTSimuPtr;
 } // namespace robot_dart
 
 #endif
