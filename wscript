@@ -192,14 +192,14 @@ def build(bld):
                       defines = ['GRAPHIC', 'RESPATH="' + path + '"'],
                       target = 'simpleArmSchunk')
 
-        bld.program(features = 'cxx',
-                      install_path = None,
-                      source = 'src/arm_sim/arm_simu_test.cpp',
-                      includes = './include',
-                      uselib = libs_graphics,
-                      use = 'RobotDARTSimu',
-                      defines = ['GRAPHIC'],
-                      target = 'arm_simu_test')
+        # bld.program(features = 'cxx',
+        #               install_path = None,
+        #               source = 'src/arm_sim/arm_simu_test.cpp',
+        #               includes = './include',
+        #               uselib = libs_graphics,
+        #               use = 'RobotDARTSimu',
+        #               defines = ['GRAPHIC'],
+        #               target = 'arm_simu_test')
 
         # if we found the hexapod controller includes and Bullet collision
         if len(bld.env.INCLUDES_HEXAPOD_CONTROLLER) > 0 and 'BulletCollision' in bld.env.LIB_DART:
