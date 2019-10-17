@@ -76,6 +76,9 @@ namespace robot_dart {
 
         double damping_coeff(size_t dof) const;
         std::vector<double> damping_coeffs() const;
+        
+        void set_coulomb_friction(double friction);
+        double coulomb_friction(size_t dof) const;
 
         // Set the pose of the robot base (changes the transformation of the parent joint of the root body)
         void set_base_pose(const Eigen::Isometry3d& tf);

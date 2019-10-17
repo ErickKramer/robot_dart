@@ -320,6 +320,19 @@ namespace robot_dart {
         return damps;
     }
 
+    void Robot::set_coulomb_friction(double friction)
+    {
+        for (size_t i = 0; i < _skeleton->getNumDofs(); ++i) {
+            _skeleton->getDof(i)->setCoulombFriction(friction);
+        }
+    }
+
+    double Robot::coulomb_friction(size_t dof) const
+    {
+        ROBOT_DART_ASSERT(dof < _skeleton->getNumDofs(), "DOF index out of bounds", 0.);
+        return _skeleton->getDof(dof)->getCoulombFriction();
+    }
+
     void Robot::set_base_pose(const Eigen::Isometry3d& tf)
     {
         auto jt = _skeleton->getRootBodyNode()->getParentJoint();
