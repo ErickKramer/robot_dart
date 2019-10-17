@@ -32,17 +32,19 @@ int main()
     // Create robot
     auto robot = std::make_shared<robot_dart::Robot>(urdf_path, packages,name); 
 
+    // robot->set_coulomb_friction(1.4);
+    // std::cout << "Set coulomb friction to " << robot->coulomb_friction(8) << std::endl;
+
     // Specify desired configuration
     std::vector<double> conf(8, 0.0);
-    conf[1] = M_PI_2;
-    // conf[0] = 0.360641;
-    // conf[1] = -0.759309;
-    // conf[2] = -0.601249;
-    // conf[3] = 0.098047;
-    // conf[4] = -0.992919;
-    // conf[5] = -0.695747;
-    // conf[6] = -0.788559;
-    // conf[7] = 0.;
+    conf[0] = -0.733724;
+    conf[1] = -0.985799;
+    conf[2] = -0.982756;
+    conf[3] = 0.991852;
+    conf[4] = -0.951474;
+    conf[5] = 1.0;
+    conf[6] = -0.567110;
+    conf[7] = 0.033;
 
     // Create simulation
     arm_dart::SchunkArmSimu arm_simu(conf, robot, time_step, end_effector_name);
@@ -76,15 +78,15 @@ int main()
     std::cout << "Number of time steps required to reach target configuration " 
         << arm_simu.get_total_steps() << std::endl;
 
-    arm_simu.reset_descriptors(descriptors);
-    arm_simu.reset_configuration();
+    // arm_simu.reset_descriptors(descriptors);
+    // arm_simu.reset_configuration();
 
-    conf[1] = -M_PI_4;
-    // conf[7] = 0.;
+    // conf[1] = -M_PI_4;
+    // // conf[7] = 0.;
 
-    arm_simu.set_goal_configuration(conf);
-    arm_simu.run_simu(simulation_time);
-    // std::cout << "Pose of the end effector \n " << arm_simu.get_final_pose().transpose() << std::endl;
+    // arm_simu.set_goal_configuration(conf);
+    // arm_simu.run_simu(simulation_time);
+    // // std::cout << "Pose of the end effector \n " << arm_simu.get_final_pose().transpose() << std::endl;
 
     // std::cout << "Total arm movement " << arm_simu.get_total_joints_motion()<< std::endl;
     

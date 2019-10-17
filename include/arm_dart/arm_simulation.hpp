@@ -179,6 +179,9 @@ namespace arm_dart{
             // Full constructor of the Schunk Arm simulation
             //--------------------------------------------------------------------------
             _arm_robot = robot;
+
+            // set coulomb friction
+            _arm_robot->set_coulomb_friction(1.4);
             
             // Pin arm to the world
             _arm_robot->fix_to_world();
@@ -229,11 +232,12 @@ namespace arm_dart{
             _simu->world()->getConstraintSolver()->
                 setCollisionDetector(dart::collision::FCLCollisionDetector::create());
 
+            // Set Accelerations 
+            set_acceleration_limits(0.01);
+
             // Add robot to the simulation
             _simu->add_robot(_arm_robot);
 
-            // Set Accelerations 
-            set_acceleration_limits(0.01);
         }
 
         //==============================================================================
