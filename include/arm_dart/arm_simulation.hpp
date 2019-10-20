@@ -354,10 +354,10 @@ namespace arm_dart{
         double total_movement(Eigen::VectorXd init_conf, Eigen::VectorXd end_conf){
             //--------------------------------------------------------------------------
             // Computes the amount of radians the arm moved from the initial configuration to
-            // the final configuration
+            // the final configuration, excluding gripper motion
             //--------------------------------------------------------------------------
             double total = 0;
-            for (int i = 0; i < init_conf.size()-1; i++){
+            for (int i = 0; i < init_conf.size()-2; i++){
                 total += abs(end_conf[i] - init_conf[i]);
             }
             return total;
