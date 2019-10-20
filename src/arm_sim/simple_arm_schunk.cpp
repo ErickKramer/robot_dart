@@ -268,7 +268,6 @@ int main(){
     std::vector<double> ctrl(num_ctrl_dofs, 0.0);
 
     // Set values for the gripper (Close position)
-    ctrl[1] = M_PI_2;
     // ctrl[8] = -0.029;
 
     // Add a PD-controller to the arm
@@ -301,7 +300,7 @@ int main(){
     Eigen::VectorXd Kd = Eigen::VectorXd::Ones(num_ctrl_dofs); 
     double i_min;
     double i_max;
-    std::ifstream pid_file("src/arm_sim/pid_params.txt");
+    std::ifstream pid_file("res/pid_params.txt");
     std::string _line;
     
     while(std::getline(pid_file, _line)){
