@@ -66,7 +66,7 @@ namespace robot_dart {
             Eigen::VectorXd commands = Pout + Iout + Dout;
 
             // Accumulate torque
-            _total_torque += abs(commands.sum());
+            _total_torque += abs(commands.head(commands.size()-1).sum());
 
             return commands;
         }
