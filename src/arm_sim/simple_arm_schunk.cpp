@@ -221,7 +221,7 @@ int main(){
     // ---------------- Simulator ---------------------
     // Create robot_dart simulator
     std::srand(std::time(NULL));
-    double timestep = 0.01;
+    double timestep = 0.001;
     // double timestep = 0.001;
     double simulation_time = 10.;
     // Setting timestep
