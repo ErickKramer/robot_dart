@@ -374,42 +374,17 @@ int main(){
     for (auto c : ctrl) std::cout << c << " ";
     std::cout << std::endl;
     
-    // auto start = std::chrono::steady_clock::now();
-    
-    // Run simulation
-    simu.run(simulation_time/4);
-
-    // auto end = std::chrono::steady_clock::now();
-
-    display_run_results(simu, timestep, ctrl);
-    
-    // std::cout << "Simulation ran for " << 
-    //     std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() 
-    //         << " ms " <<std::endl;
-
-    // std::cout << "Simulation ran for " << 
-    //     std::chrono::duration_cast<std::chrono::seconds>(end - start).count() 
-    //         << " sec " <<std::endl;
-
-    // Reset States vector
-    std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
-    std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states.clear();
-    std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities.clear();
-
     std::cout<<"-----------------------------------"<<std::endl;
-
-    std::cout<<"Moving joint " << joint_to_tune << " pi/2 radians"<<std::endl;
-
-    ctrl[joint_to_tune] = M_PI_2;
-    // ctrl[0] = M_PI_2;
-    // ctrl[1] = -M_PI_2;
-    // ctrl[2] = M_PI_2;
-    // ctrl[3] = -M_PI_2;
-    // ctrl[4] = M_PI_2;
-    // ctrl[5] = -M_PI_2;
-    // ctrl[6] = M_PI_2;
-    // ctrl[7] = 0.033;
-    // ctrl[joint_to_tune] = 0.033;
+    
+    if (joint_to_tune == 7){
+        std::cout<<"Opening gripper " << std::endl;
+        ctrl[joint_to_tune] = 0.033;
+    } else if (joint_to_tune >= num_ctrl_dofs){
+        std::cout << "Arm holding still " << std::endl;   
+    } else{
+        std::cout<<"Moving joint " << joint_to_tune << " " << M_PI_2 << " radians"<<std::endl;
+        ctrl[joint_to_tune] = M_PI_2;
+    }
 
     // Set controller
     arm_robot->controllers()[0]->set_parameters(ctrl);
@@ -420,7 +395,7 @@ int main(){
 
     // Create a velocities log file to analyze the top velocity of the movement
     std::vector<Eigen::VectorXd> velocities = std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities;
-    backup(velocities, "text", "velocities_to_test.txt");
+    // backup(velocities, "text", "velocities_to_test.txt");
 
     // Reset States vector
     std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
@@ -438,98 +413,8 @@ int main(){
 
     // Run simulation
     simu.run(simulation_time);
-    display_run_results(simu, timestep, ctrl);
-
-    // Create a velocities log file to analyze the top velocity of the movement
-    velocities = std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities;
-    backup(velocities, "text", "velocities_to_initial.txt");
-
-    // Reset States vector
-    std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
-    std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states.clear();
-    std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities.clear();
-
-    std::cout<<"-----------------------------------"<<std::endl;
-
-    // std::cout<<"Moving second joint -pi/2 radians"<<std::endl;
-
-    // Specify joint angle
-    // ctrl[1] = -M_PI_2;
-    // ctrl[3] = -M_PI_2;
-    // ctrl[5] = -M_PI_2;
-    // std::cout << "Joint angles requested" << std::endl;
-    // for (auto c : ctrl) std::cout << c << " ";
-    // std::cout << std::endl;
-
-    // // Set controller
-    // arm_robot->controllers()[0]->set_parameters(ctrl);
-
-    // // Run simulation
-    // simu.run(simulation_time);
-    // display_run_results(simu, timestep);
-
-    // // Reset States vector
-    // std::static_pointer_cast<JointStateDesc>(simu.descriptor(0))->joints_states.clear();
-    // std::static_pointer_cast<PoseStateDesc>(simu.descriptor(1))->pose_states.clear();
-    // std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities.clear();
 
     arm_robot.reset();
     return 0;
 
 }
-
-// NOTE: REFACTOR
-// void display_link_info(Eigen::Isometry3d link_transform){
-
-//     /*
-//         Displays the following information from the transform of a link:
-//         - Homogeneous Transformation matrix
-//         - Rotation matrix
-//         - Translation matrix
-//         - Quaternion
-//         - Euler angles
-//         - Pose
-//     */
-
-//     Computes rotation matrix
-//     Eigen::Matrix3d rot_matrix = link_transform.rotation();
-//     // Computes Homogeneous transformation matrix
-//     Eigen::Matrix4d transformation_matrix = link_transform.matrix();
-//     // Computes Quaternions
-//     Eigen::Quaterniond quat_end(rot_matrix);
-//     // Computes Euler angles
-//     Eigen::Vector3d euler = rot_matrix.eulerAngles(2,1,0);
-//     // Computes translation vector
-//     Eigen::VectorXd translation = link_transform.translation();
-//     // Computes pose vector
-//     Eigen::VectorXd pose(link_transform.translation().size() + euler.size());
-//     pose << translation, euler;
-//     Computes an axis angle based on the quaternions
-//     https://eigen.tuxfamily.org/dox/classEigen_1_1AngleAxis.html
-//     Eigen::AngleAxisd angle_axis(quat_end);
-
-
-//     std::cout << "Homogeneous transformation matrix" << std::endl;
-//     std::cout << transformation_matrix << std::endl;
-
-//     std::cout << "\n Rotation matrix" << std::endl;
-//     std::cout << rot_matrix << std::endl;
-
-//     std::cout << "\n Translation vector" << std::endl;
-//     std::cout << translation << std::endl;
-
-//     std::cout << "\n Quaternion" << std::endl;
-//     std::cout << "w: " << quat_end.w() << " x: " << quat_end.x() <<
-//                  " y: " << quat_end.y() << " z: " << quat_end.z() << std::endl;
-
-//     std::cout << "\n Euler angles" << std::endl;
-//     std::cout << "Yaw: " << euler[0] << " Pitch: " << euler [1] << " Roll: " <<
-//                  euler[2] << std::endl;
-
-//     std::cout << "\n Pose" << std::endl;
-//     std::cout << compute_pose(link_transform).transpose() << std::endl;
-
-//     std::cout << "\n Axis angle" << std::endl;
-//     std::cout << angle_axis.axis().transpose() << std::endl;
-//     std::cout<< angle_axis.angle() << std::endl;
-// }
