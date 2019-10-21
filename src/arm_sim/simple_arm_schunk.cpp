@@ -128,7 +128,7 @@ double total_movement(Eigen::VectorXd init_conf, Eigen::VectorXd end_conf){
     return total;
 }
 
-void display_run_results(robot_dart::RobotDARTSimu simu, double timestep, std::vector<double>& ctrl ){
+void display_run_results(robot_dart::RobotDARTSimu simu, double timestep, std::vector<double>& ctrl, double joint_to_tune ){
     /*  Displays information relevant of the ran simulation
         Args:
         - simu:
@@ -160,7 +160,8 @@ void display_run_results(robot_dart::RobotDARTSimu simu, double timestep, std::v
 
     std::cout << "Joint angles requested " << target_positions.transpose() << std::endl;
     
-    std::cout << "Error for the arm configuration \n" << (target_positions - end_configuration).transpose() << std::endl;
+    if (joint_to_tune < ctrl.size()) 
+        std::cout << "Error for the arm configuration \n" << abs((target_positions - end_configuration)[joint_to_tune]) << std::endl;
 
     std::cout << "Pose of the end effector \n " << poses.back().transpose() << std::endl;
 
@@ -212,11 +213,16 @@ int main(){
     auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/schunk_with_pg70.urdf", packages, "schunk lwa4d with PG70 gripper");
     // auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/schunk_with_fetch.urdf", packages, "schunk lwa4d with PG70 gripper");
     // auto arm_robot = std::make_shared<robot_dart::Robot>("res/models/iiwa14.urdf", packages, "iiwa14 arm");
+    
+    // Add friction
+    std::cout << "Adding friction " << std::endl;
+    arm_robot->set_coulomb_friction(1.4);
 
     // ---------------- Simulator ---------------------
     // Create robot_dart simulator
     std::srand(std::time(NULL));
-    double timestep = 0.001;
+    double timestep = 0.01;
+    // double timestep = 0.001;
     double simulation_time = 10.;
     // Setting timestep
     robot_dart::RobotDARTSimu simu(timestep);
@@ -391,7 +397,7 @@ int main(){
 
     // Run simulation
     simu.run(simulation_time);
-    display_run_results(simu, timestep, ctrl);
+    display_run_results(simu, timestep, ctrl, joint_to_tune);
 
     // Create a velocities log file to analyze the top velocity of the movement
     std::vector<Eigen::VectorXd> velocities = std::static_pointer_cast<JointVelDesc>(simu.descriptor(2))->joints_velocities;
